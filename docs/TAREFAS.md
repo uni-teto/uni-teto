@@ -16,9 +16,11 @@ Marque `[x]` ao concluir. Como os dois trabalham direto na `dev`, façam
 - [x] Validar o domínio do e-mail contra `University.emailDomain` e vincular o
       usuário à universidade
 - [x] Página de perfil (nome, WhatsApp e foto)
-- [ ] Proteger as rotas que exigem login (criar/editar anúncio)
+- [x] Recuperação de senha ("Esqueci minha senha") por e-mail
+- [x] Proteger as rotas que exigem login (`src/proxy.ts`; ao criar as páginas de
+      anúncio, acrescentá-las ao `matcher`)
 - [x] Seed (`prisma/seed.ts`) com universidades e campi reais, com coordenadas
-- [ ] Layout base: cabeçalho, navegação e estado logado/deslogado
+- [x] Layout base: cabeçalho, navegação e estado logado/deslogado
 
 ## Frente B — Anúncios, busca por distância e mapa
 
@@ -40,7 +42,8 @@ teste criado direto no banco (Prisma Studio: `npm run db:studio`).
 
 ## Compartilhadas / finais
 
-- [ ] Rodar os testes E2E (Playwright) no CI
+- [x] Rodar os testes E2E (Playwright) no CI
 - [x] Dockerfile da aplicação e serviço `app` no `docker-compose.yml`
 - [ ] Testes E2E dos fluxos principais: cadastro → criar anúncio → buscar
+      (cadastro, login, perfil e senha já cobertos em `e2e/auth.spec.ts`)
 - [ ] Deploy (definir onde)

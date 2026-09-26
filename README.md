@@ -56,6 +56,26 @@ No Windows/Mac rodar fora do Docker (`npm run dev`) costuma ser mais rápido; us
 o modo acima se preferir não instalar o Node ou para reproduzir o ambiente do
 colega.
 
+### Testes E2E (Playwright)
+
+Os testes de `e2e/` usam o navegador de verdade: criam contas, leem os e-mails
+de confirmação e de senha no Mailpit e testam login, perfil e páginas
+protegidas. Precisam do banco com o seed e do Mailpit rodando (passos 3 a 5 de
+"Como rodar"). O Playwright sobe o `npm run dev` sozinho (ou reaproveita o que
+já estiver rodando).
+
+```bash
+# Só na primeira vez: baixa o Chromium usado nos testes
+npx playwright install chromium
+```
+
+```bash
+npm run test:e2e
+```
+
+Se algum falhar, o relatório abre com `npx playwright show-report`. No CI eles
+rodam no job `e2e`, com Postgres e Mailpit como serviços.
+
 ### Fotos (Cloudinary)
 
 O envio de fotos usa o [Cloudinary](https://cloudinary.com) (plano gratuito).
