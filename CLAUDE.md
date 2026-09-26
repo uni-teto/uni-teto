@@ -28,13 +28,13 @@ compatibilidade.
 
 - TypeScript em tudo; Next.js (App Router) + React
 - PostgreSQL + PostGIS para distância (fallback: Haversine); ORM Prisma
-- Auth.js (NextAuth) ou Better Auth, com validação de domínio institucional
+- Better Auth (e-mail e senha), com validação de domínio institucional
 - Zod para validação; React Hook Form nos formulários
 - Tailwind CSS + shadcn/ui
 - Leaflet + OpenStreetMap; geocodificação via Nominatim
-- Imagens: Cloudinary ou Supabase Storage
+- Imagens: Cloudinary (upload direto do navegador com assinatura do servidor)
 - Testes: Vitest (unitários), Playwright (E2E)
-- Docker + Docker Compose (app, Postgres, Mailpit)
+- Docker + Docker Compose (app, Postgres, Mailpit); app opcional via `--profile app`
 - CI: GitHub Actions (`.github/workflows/ci.yml`): lint, Prettier, `tsc --noEmit`, testes e
   build
 
@@ -50,8 +50,37 @@ sozinho.
 - Coordenadas em colunas `latitude`/`longitude`; distância via PostGIS em SQL.
   `src/lib/geo/distance.ts` tem Haversine para exibição/fallback.
 - Preços em centavos (`priceCents`).
+- WhatsApp guardado só com dígitos e DDI (`5586999998888`):
+  `normalizeWhatsapp`/`formatWhatsapp` em `src/lib/profile/whatsapp.ts`.
+- Fotos: `src/lib/cloudinary/`. O servidor assina o upload fixando o
+  `public_id`; o navegador envia direto ao Cloudinary; ao salvar, confira a URL
+  (ex: `isOwnAvatarUrl`). Sem as variáveis `CLOUDINARY_*` o upload fica
+  desativado e o resto funciona.
+- Server Actions: sempre conferir a sessão (`getSession()`) e validar com Zod
+  dentro da action; podem ser chamadas direto por POST.
+- Seed: dados em `src/lib/seed/universities.ts` (com fonte de cada domínio e
+  coordenada), script em `prisma/seed.ts`, `npm run db:seed`. Só adicionar
+  universidade com domínio de e-mail de aluno confirmado em fonte oficial.
+- Auth: config em `src/lib/auth/server.ts`, cliente em `src/lib/auth/client.ts`,
+  rotas em `/api/auth/*`. Domínios permitidos = `University.emailDomain`; a
+  checagem roda no hook `databaseHooks.user.create.before` (servidor).
+- Sessão no servidor: `getSession()` de `src/lib/auth/session.ts`; no navegador,
+  `authClient.useSession()`. Após login/logout, `router.refresh()`.
+- Login exige e-mail confirmado (`requireEmailVerification`): sem isso não há
+  sessão. E-mails em `src/lib/email/` (nodemailer; em dev caem no Mailpit).
+- Páginas que exigem login: acrescentar no `matcher` de `src/proxy.ts` (checagem
+  rápida pelo cookie, manda para `/login?next=...`) **e** conferir
+  `getSession()` na página. Caminhos e `safeRedirectPath` em
+  `src/lib/auth/routes.ts` (nunca redirecionar para `next` sem validar).
+- Respostas de auth não revelam se um e-mail existe (cadastro repetido e
+  "esqueci minha senha" mostram a mesma mensagem; o aviso vai por e-mail).
+- Feedback de ações (salvou, enviou, saiu): toast do `sonner`
+  (`import { toast } from "sonner"`); erros de campo ficam no formulário.
+- Depois de mudar o schema, `npm run db:migrate` (já roda o `prisma generate`;
+  no Prisma 7 o `migrate dev` sozinho não regenera o client).
 - Componentes de UI: `npx shadcn@latest add <nome>` (vão para `src/components/ui`).
-- Testes unitários ao lado do código (`*.test.ts`); E2E em `e2e/`.
+- Testes unitários ao lado do código (`*.test.ts`); E2E em `e2e/` (precisam do
+  banco com seed e do Mailpit; links dos e-mails via `e2e/support/mailpit.ts`).
 
 ## Fluxo Git
 

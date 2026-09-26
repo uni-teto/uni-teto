@@ -9,16 +9,18 @@ Marque `[x]` ao concluir. Como os dois trabalham direto na `dev`, façam
 
 ## Frente A — Usuários, autenticação e campi
 
-- [ ] Escolher a biblioteca de auth (Auth.js ou Better Auth) e registrar a decisão
+- [x] Escolher a biblioteca de auth (Auth.js ou Better Auth) e registrar a decisão
       no `CLAUDE.md`
-- [ ] Adicionar as tabelas de auth ao `prisma/schema.prisma` e gerar a migration
-- [ ] Cadastro/login com verificação por e-mail (usando o Mailpit em dev)
-- [ ] Validar o domínio do e-mail contra `University.emailDomain` e vincular o
+- [x] Adicionar as tabelas de auth ao `prisma/schema.prisma` e gerar a migration
+- [x] Cadastro/login com verificação por e-mail (usando o Mailpit em dev)
+- [x] Validar o domínio do e-mail contra `University.emailDomain` e vincular o
       usuário à universidade
-- [ ] Página de perfil (nome, WhatsApp)
-- [ ] Proteger as rotas que exigem login (criar/editar anúncio)
-- [ ] Seed (`prisma/seed.ts`) com universidades e campi reais, com coordenadas
-- [ ] Layout base: cabeçalho, navegação e estado logado/deslogado
+- [x] Página de perfil (nome, WhatsApp e foto)
+- [x] Recuperação de senha ("Esqueci minha senha") por e-mail
+- [x] Proteger as rotas que exigem login (`src/proxy.ts`; ao criar as páginas de
+      anúncio, acrescentá-las ao `matcher`)
+- [x] Seed (`prisma/seed.ts`) com universidades e campi reais, com coordenadas
+- [x] Layout base: cabeçalho, navegação e estado logado/deslogado
 
 ## Frente B — Anúncios, busca por distância e mapa
 
@@ -26,7 +28,8 @@ Marque `[x]` ao concluir. Como os dois trabalham direto na `dev`, façam
       respeitando a política de uso (User-Agent e 1 requisição/s)
 - [ ] Formulário de criar/editar anúncio (React Hook Form + Zod), com
       geocodificação do endereço ao salvar
-- [ ] Upload de fotos (escolher Cloudinary ou Supabase Storage)
+- [ ] Upload de fotos dos anúncios (Cloudinary já escolhido e configurado na
+      foto de perfil: reaproveitar `src/lib/cloudinary/`)
 - [ ] Consulta de busca com PostGIS: filtro por raio até o campus, preço e tipo,
       ordenada por distância (`ST_DWithin` / `ST_Distance` sobre `geography`)
 - [ ] Testes de integração da busca por distância (o diferencial do TCC)
@@ -39,7 +42,8 @@ teste criado direto no banco (Prisma Studio: `npm run db:studio`).
 
 ## Compartilhadas / finais
 
-- [ ] Rodar os testes E2E (Playwright) no CI
-- [ ] Dockerfile da aplicação e serviço `app` no `docker-compose.yml`
+- [x] Rodar os testes E2E (Playwright) no CI
+- [x] Dockerfile da aplicação e serviço `app` no `docker-compose.yml`
 - [ ] Testes E2E dos fluxos principais: cadastro → criar anúncio → buscar
+      (cadastro, login, perfil e senha já cobertos em `e2e/auth.spec.ts`)
 - [ ] Deploy (definir onde)

@@ -1,6 +1,55 @@
-# Serviços de apoio para desenvolvimento local.
-# A aplicação roda fora do Docker com `npm run dev`.
+# Ambiente de desenvolvimento.
+#
+#   docker compose up -d                -> só Postgres e Mailpit (app com `npm run dev`)
+#   docker compose --profile app watch  -> tudo, inclusive a aplicação
 services:
+  # Aplicação Next.js em modo de desenvolvimento, em http://localhost:3000
+  app:
+    profiles: [app]
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://uniteto:uniteto@db:5432/uniteto?schema=public
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      # Segredo só para desenvolvimento local
+      BETTER_AUTH_SECRET: dev-secret-uniteto-nao-usar-em-producao
+      BETTER_AUTH_URL: http://localhost:3000
+      # Lidas do .env da raiz (vazias = envio de fotos desativado)
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      PRISMA_HIDE_UPDATE_MESSAGE: "true"
+    # O `watch` copia os arquivos alterados para o container. É mais confiável
+    # que montar a pasta como volume, que no Windows/Mac não avisa o Next das
+    # mudanças (e a página não recarrega).
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - node_modules/
+            - .next/
+            - src/generated/
+            - prisma/
+            - package.json
+            - package-lock.json
+        # Mudou dependência ou schema: reconstrói a imagem (npm ci + prisma generate)
+        # e aplica as migrations novas ao subir.
+        - action: rebuild
+          path: package.json
+        - action: rebuild
+          path: package-lock.json
+        - action: rebuild
+          path: prisma/
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
   db:
     image: postgis/postgis:17-3.5
     environment:
