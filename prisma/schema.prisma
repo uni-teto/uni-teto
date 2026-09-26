@@ -5,8 +5,9 @@
 // usa PostGIS em SQL (ST_DWithin/ST_Distance sobre geography), montando o ponto
 // a partir dessas colunas. A extensão é habilitada na primeira migration.
 //
-// As tabelas de autenticação (Account, Session, VerificationToken...) serão
-// adicionadas junto com a biblioteca de auth escolhida.
+// Autenticação: Better Auth (src/lib/auth/server.ts). Os modelos User, Session, Account
+// e Verification seguem o formato que ele espera; campos extras do User ficam
+// declarados em `user.additionalFields` na config.
 
 generator client {
   provider = "prisma-client"
@@ -46,19 +47,69 @@ model Campus {
 
 model User {
   id            String      @id @default(cuid())
-  name          String?
+  name          String
   email         String      @unique
-  emailVerified DateTime?
+  emailVerified Boolean     @default(false)
   image         String?
   // Número usado no link de contato do WhatsApp (apenas dígitos, com DDI)
   whatsapp      String?
+  // Preenchido no cadastro a partir do domínio do e-mail institucional
   universityId  String?
   university    University? @relation(fields: [universityId], references: [id])
   listings      Listing[]
+  sessions      Session[]
+  accounts      Account[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
   @@index([universityId])
+}
+
+model Session {
+  id        String   @id
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Uma conta por forma de login. No cadastro com e-mail e senha,
+// providerId = "credential" e o hash da senha fica em `password`.
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+// Tokens temporários (ex: verificação de e-mail, redefinição de senha)
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
 }
 
 enum ListingType {
