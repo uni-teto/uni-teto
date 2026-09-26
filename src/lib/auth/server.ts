@@ -3,12 +3,28 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { sendEmail } from "@/lib/email/send-email";
-import { verificationEmail } from "@/lib/email/templates";
+import {
+  existingAccountEmail,
+  resetPasswordEmail,
+  verificationEmail,
+  type EmailContent,
+} from "@/lib/email/templates";
 import { prisma } from "@/lib/prisma";
 import { DomainNotAllowedError, resolveUniversityId } from "./email-domain";
+import { FORGOT_PASSWORD_PATH, SIGN_IN_PATH } from "./routes";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "./sign-up-schema";
 
 const VERIFICATION_EXPIRES_IN_HOURS = 24;
+const RESET_PASSWORD_EXPIRES_IN_MINUTES = 60;
+const BASE_URL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+
+// Sem `await`, como recomenda o Better Auth: o tempo de resposta não revela
+// se o e-mail existe. Falhas de envio só vão para o log.
+function sendInBackground(to: string, content: EmailContent, kind: string) {
+  void sendEmail(to, content).catch((error) => {
+    console.error(`Falha ao enviar e-mail de ${kind}:`, error);
+  });
+}
 
 /**
  * Configuração do Better Auth (lado do servidor).
@@ -24,6 +40,28 @@ export const auth = betterAuth({
     // Sem sessão até confirmar o e-mail: tudo que exige login fica bloqueado
     requireEmailVerification: true,
     autoSignIn: false,
+    // "Esqueci minha senha": o link leva a RESET_PASSWORD_PATH com o token
+    resetPasswordTokenExpiresIn: RESET_PASSWORD_EXPIRES_IN_MINUTES * 60,
+    // Quem redefine a senha é desconectado de todos os aparelhos
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      const content = resetPasswordEmail({
+        name: user.name,
+        url,
+        expiresInMinutes: RESET_PASSWORD_EXPIRES_IN_MINUTES,
+      });
+      sendInBackground(user.email, content, "redefinição de senha");
+    },
+    // Cadastro com e-mail que já tem conta: o site responde igual a um
+    // cadastro novo (não revela quais e-mails existem) e o dono é avisado aqui.
+    onExistingUserSignUp: async ({ user }) => {
+      const content = existingAccountEmail({
+        name: user.name,
+        signInUrl: new URL(SIGN_IN_PATH, BASE_URL).href,
+        forgotPasswordUrl: new URL(FORGOT_PASSWORD_PATH, BASE_URL).href,
+      });
+      sendInBackground(user.email, content, "conta existente");
+    },
   },
   emailVerification: {
     sendOnSignUp: true,
@@ -38,11 +76,7 @@ export const auth = betterAuth({
         url,
         expiresInHours: VERIFICATION_EXPIRES_IN_HOURS,
       });
-      // Sem `await`, como recomenda o Better Auth: o tempo de resposta não
-      // revela se o e-mail já existia. Falhas de envio só vão para o log.
-      void sendEmail(user.email, content).catch((error) => {
-        console.error("Falha ao enviar e-mail de verificação:", error);
-      });
+      sendInBackground(user.email, content, "verificação");
     },
   },
   session: {

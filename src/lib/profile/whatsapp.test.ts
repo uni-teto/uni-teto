@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { formatWhatsapp, normalizeWhatsapp } from "./whatsapp";
+import {
+  formatWhatsapp,
+  maskWhatsappInput,
+  normalizeWhatsapp,
+} from "./whatsapp";
 
 describe("normalizeWhatsapp", () => {
   it.each([
@@ -35,5 +39,30 @@ describe("formatWhatsapp", () => {
   it("volta ao mesmo valor ao normalizar de novo", () => {
     const stored = "5511987654321";
     expect(normalizeWhatsapp(formatWhatsapp(stored))).toBe(stored);
+  });
+});
+
+describe("maskWhatsappInput", () => {
+  it("formata aos poucos enquanto digita", () => {
+    expect(maskWhatsappInput("")).toBe("");
+    expect(maskWhatsappInput("8")).toBe("(8");
+    expect(maskWhatsappInput("86")).toBe("(86");
+    expect(maskWhatsappInput("869")).toBe("(86) 9");
+    expect(maskWhatsappInput("8699999")).toBe("(86) 99999");
+    expect(maskWhatsappInput("86999998")).toBe("(86) 99999-8");
+    expect(maskWhatsappInput("86999998888")).toBe("(86) 99999-8888");
+  });
+
+  it("aceita texto já formatado ou colado com +55", () => {
+    expect(maskWhatsappInput("(86) 99999-8888")).toBe("(86) 99999-8888");
+    expect(maskWhatsappInput("+55 86 99999-8888")).toBe("(86) 99999-8888");
+  });
+
+  it("ignora letras e dígitos a mais", () => {
+    expect(maskWhatsappInput("86a999998888999")).toBe("(86) 99999-8888");
+  });
+
+  it("mantém o DDD quando apaga o espaço depois do parêntese", () => {
+    expect(maskWhatsappInput("(86)")).toBe("(86");
   });
 });

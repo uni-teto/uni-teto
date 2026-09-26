@@ -28,3 +28,18 @@ export function formatWhatsapp(stored: string): string {
 
   return `(${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}`;
 }
+
+/**
+ * Máscara aplicada enquanto a pessoa digita: "86999998888" → "(86) 99999-8888".
+ * Aceita colar com +55 e ignora o que passar de 11 dígitos.
+ */
+export function maskWhatsappInput(input: string): string {
+  let digits = input.replace(/\D/g, "");
+  if (digits.length > 11 && digits.startsWith("55")) digits = digits.slice(2);
+  digits = digits.slice(0, 11);
+
+  if (digits.length === 0) return "";
+  if (digits.length <= 2) return `(${digits}`;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}

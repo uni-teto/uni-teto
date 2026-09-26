@@ -1,12 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { avatarThumbnailUrl } from "@/lib/cloudinary/avatar-url";
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
-  return (first + last).toUpperCase();
-}
+import { initials } from "@/lib/profile/name";
 
 /** Foto do usuário (via Cloudinary) ou as iniciais do nome. */
 export function UserAvatar({

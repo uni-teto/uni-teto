@@ -1,16 +1,20 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FormField } from "@/components/form-field";
+import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth/client";
+import { FORGOT_PASSWORD_PATH } from "@/lib/auth/routes";
 import { signInSchema, type SignInInput } from "@/lib/auth/sign-in-schema";
 
-export function SignInForm() {
+/** `next`: para onde voltar após o login (já validado pela página). */
+export function SignInForm({ next }: { next: string }) {
   const router = useRouter();
   const {
     register,
@@ -31,7 +35,7 @@ export function SignInForm() {
     }
 
     // `refresh` faz o cabeçalho (Server Component) ler a sessão nova
-    router.push("/");
+    router.push(next);
     router.refresh();
   }
 
@@ -49,13 +53,18 @@ export function SignInForm() {
         </FormField>
 
         <FormField id="password" label="Senha" error={errors.password}>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             autoComplete="current-password"
             aria-invalid={!!errors.password}
             {...register("password")}
           />
+          <Link
+            href={FORGOT_PASSWORD_PATH}
+            className="self-end text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Esqueci minha senha
+          </Link>
         </FormField>
 
         <FieldError errors={[errors.root]} />

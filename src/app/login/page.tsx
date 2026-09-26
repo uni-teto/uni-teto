@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { safeRedirectPath } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { SignInForm } from "./sign-in-form";
 
@@ -16,8 +17,12 @@ export const metadata: Metadata = {
   title: "Entrar | UniTeto",
 };
 
-export default async function SignInPage() {
-  if (await getSession()) redirect("/");
+export default async function SignInPage({
+  searchParams,
+}: PageProps<"/login">) {
+  // Página de onde a pessoa veio (ex: /perfil), validada contra open redirect
+  const next = safeRedirectPath((await searchParams).next);
+  if (await getSession()) redirect(next);
 
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-12">
@@ -31,7 +36,7 @@ export default async function SignInPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SignInForm />
+          <SignInForm next={next} />
         </CardContent>
         <CardFooter className="text-sm text-muted-foreground">
           Ainda não tem conta?&nbsp;

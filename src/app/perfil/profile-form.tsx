@@ -1,8 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldGroup } from "@/components/ui/field";
@@ -12,6 +12,7 @@ import {
   type ProfileData,
   type ProfileInput,
 } from "@/lib/profile/profile-schema";
+import { maskWhatsappInput } from "@/lib/profile/whatsapp";
 import { updateProfile } from "./actions";
 
 export function ProfileForm({
@@ -19,7 +20,6 @@ export function ProfileForm({
 }: {
   defaultValues: ProfileInput;
 }) {
-  const [saved, setSaved] = useState(false);
   const {
     register,
     handleSubmit,
@@ -32,14 +32,16 @@ export function ProfileForm({
     defaultValues,
   });
 
+  // Aplica a máscara "(86) 99999-8888" enquanto a pessoa digita
+  const whatsappField = register("whatsapp");
+
   async function onSubmit() {
-    setSaved(false);
     // Manda o que foi digitado: o servidor valida e normaliza de novo
     const values = getValues();
     const result = await updateProfile(values);
     if (result.ok) {
       reset(values);
-      setSaved(true);
+      toast.success("Alterações salvas.");
       return;
     }
 
@@ -74,22 +76,19 @@ export function ProfileForm({
             autoComplete="tel-national"
             placeholder="(86) 99999-8888"
             aria-invalid={!!errors.whatsapp}
-            {...register("whatsapp")}
+            {...whatsappField}
+            onChange={(event) => {
+              event.target.value = maskWhatsappInput(event.target.value);
+              return whatsappField.onChange(event);
+            }}
           />
         </FormField>
 
         <FieldError errors={[errors.root]} />
 
-        <div className="flex items-center gap-3">
-          <Button type="submit" disabled={isSubmitting || !isDirty}>
-            {isSubmitting ? "Salvando..." : "Salvar"}
-          </Button>
-          {saved && !isDirty && (
-            <p role="status" className="text-sm text-muted-foreground">
-              Alterações salvas.
-            </p>
-          )}
-        </div>
+        <Button type="submit" disabled={isSubmitting || !isDirty}>
+          {isSubmitting ? "Salvando..." : "Salvar"}
+        </Button>
       </FieldGroup>
     </form>
   );

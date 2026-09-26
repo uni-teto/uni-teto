@@ -36,3 +36,19 @@ export function signAvatarUpload(userId: string) {
     fields: { ...params, api_key: config.apiKey, signature },
   };
 }
+
+/** Apaga a foto do usuário no Cloudinary (ao remover a foto do perfil). */
+export async function deleteAvatarImage(userId: string) {
+  const config = getCloudinaryConfig();
+  if (!config) return;
+
+  // Chamadas à API do Cloudinary (diferente da assinatura) leem a config global
+  cloudinary.config({
+    cloud_name: config.cloudName,
+    api_key: config.apiKey,
+    api_secret: config.apiSecret,
+  });
+  await cloudinary.uploader.destroy(avatarPublicId(userId), {
+    invalidate: true,
+  });
+}

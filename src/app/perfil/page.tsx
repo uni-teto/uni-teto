@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { UserAvatar } from "@/components/user-avatar";
 import {
   Card,
   CardContent,
@@ -8,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { signInUrl } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { getCloudinaryConfig } from "@/lib/cloudinary/sign-upload";
 import { prisma } from "@/lib/prisma";
@@ -21,7 +21,8 @@ export const metadata: Metadata = {
 
 export default async function ProfilePage() {
   const session = await getSession();
-  if (!session) redirect("/login");
+  // O proxy (src/proxy.ts) já redireciona sem cookie; aqui a sessão é validada
+  if (!session) redirect(signInUrl("/perfil"));
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: session.user.id },
@@ -46,10 +47,11 @@ export default async function ProfilePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex flex-col items-center gap-3">
-            <UserAvatar name={user.name} image={user.image} size={96} />
-            <AvatarUploader enabled={getCloudinaryConfig() !== null} />
-          </div>
+          <AvatarUploader
+            name={user.name}
+            image={user.image}
+            enabled={getCloudinaryConfig() !== null}
+          />
 
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
             <dt className="text-muted-foreground">E-mail</dt>

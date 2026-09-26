@@ -4,12 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FormField } from "@/components/form-field";
+import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth/client";
 import { EMAIL_VERIFIED_PATH } from "@/lib/auth/routes";
 import { signUpSchema, type SignUpInput } from "@/lib/auth/sign-up-schema";
+import { ResendVerification } from "./resend-verification";
 
 export function SignUpForm() {
   const [createdEmail, setCreatedEmail] = useState<string | null>(null);
@@ -46,14 +48,16 @@ export function SignUpForm() {
 
   if (createdEmail) {
     return (
-      <div role="status" className="space-y-2 text-sm">
+      <div role="status" className="space-y-3 text-sm">
         <p>
           Enviamos um link de confirmação para <strong>{createdEmail}</strong>.
         </p>
         <p className="text-muted-foreground">
           Abra o e-mail e clique no link para ativar sua conta. Se não
-          encontrar, confira a caixa de spam.
+          encontrar, confira a caixa de spam. Se esse e-mail já tiver conta,
+          enviamos instruções para entrar.
         </p>
+        <ResendVerification email={createdEmail} />
       </div>
     );
   }
@@ -86,9 +90,8 @@ export function SignUpForm() {
         </FormField>
 
         <FormField id="password" label="Senha" error={errors.password}>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             autoComplete="new-password"
             aria-invalid={!!errors.password}
             {...register("password")}
@@ -100,9 +103,8 @@ export function SignUpForm() {
           label="Confirme a senha"
           error={errors.confirmPassword}
         >
-          <Input
+          <PasswordInput
             id="confirmPassword"
-            type="password"
             autoComplete="new-password"
             aria-invalid={!!errors.confirmPassword}
             {...register("confirmPassword")}
