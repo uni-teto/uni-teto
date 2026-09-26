@@ -41,6 +41,6 @@ teste criado direto no banco (Prisma Studio: `npm run db:studio`).
 ## Compartilhadas / finais
 
 - [ ] Rodar os testes E2E (Playwright) no CI
-- [ ] Dockerfile da aplicação e serviço `app` no `docker-compose.yml`
+- [x] Dockerfile da aplicação e serviço `app` no `docker-compose.yml`
 - [ ] Testes E2E dos fluxos principais: cadastro → criar anúncio → buscar
 - [ ] Deploy (definir onde)
