@@ -4,6 +4,16 @@ Plataforma web para estudantes universitários encontrarem moradia (quartos, vag
 em repúblicas, quitinetes) pela **distância real até o campus**. Projeto de TCC
 de Sistemas para Internet.
 
+- **Estudantes** se cadastram com o e-mail institucional, buscam moradia e veem
+  o contato de quem anuncia.
+- **Anunciantes** (proprietários, imobiliárias) se cadastram com qualquer
+  e-mail e publicam anúncios. Estudantes também podem anunciar (ex: vaga em
+  república).
+- A busca e o mapa são públicos; o contato do anúncio só aparece para estudante
+  logado.
+
+Decisões e tarefas: [docs/TAREFAS.md](docs/TAREFAS.md).
+
 ## Stack
 
 Next.js (App Router) · TypeScript · PostgreSQL + PostGIS · Prisma · Tailwind CSS

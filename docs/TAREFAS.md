@@ -1,52 +1,68 @@
 # Divisão de tarefas do MVP
 
 A base do projeto está pronta (Next.js, Prisma + PostGIS, shadcn/ui, Vitest,
-Playwright, Docker Compose e CI). As tarefas abaixo estão divididas em duas
-frentes que podem andar em paralelo com pouco conflito de arquivos.
+Playwright, Docker Compose e CI). As tarefas pendentes seguem as issues do
+GitHub, organizadas por milestone (Fase 4, 5 e 6); os critérios de aceite de
+cada uma estão na própria issue.
 
 Marque `[x]` ao concluir. Como os dois trabalham direto na `dev`, façam
 `git pull` antes de começar e commits pequenos e frequentes.
 
-## Frente A — Usuários, autenticação e campi
+## Decisões de produto (28/09/2026)
 
-- [x] Escolher a biblioteca de auth (Auth.js ou Better Auth) e registrar a decisão
-      no `CLAUDE.md`
-- [x] Adicionar as tabelas de auth ao `prisma/schema.prisma` e gerar a migration
-- [x] Cadastro/login com verificação por e-mail (usando o Mailpit em dev)
-- [x] Validar o domínio do e-mail contra `University.emailDomain` e vincular o
-      usuário à universidade
-- [x] Página de perfil (nome, WhatsApp e foto)
-- [x] Recuperação de senha ("Esqueci minha senha") por e-mail
-- [x] Proteger as rotas que exigem login (`src/proxy.ts`; ao criar as páginas de
-      anúncio, acrescentá-las ao `matcher`)
-- [x] Seed (`prisma/seed.ts`) com universidades e campi reais, com coordenadas
-- [x] Layout base: cabeçalho, navegação e estado logado/deslogado
+Quem aluga imóvel geralmente não é estudante, então o cadastro passa a ter dois
+papéis (#40):
 
-## Frente B — Anúncios, busca por distância e mapa
+| Papel          | E-mail aceito                              | Pode anunciar | Vê o contato dos anúncios |
+| -------------- | ------------------------------------------ | ------------- | ------------------------- |
+| **Estudante**  | Só institucional (universidade cadastrada) | Sim           | Sim (logado)              |
+| **Anunciante** | Qualquer e-mail, confirmado                | Sim           | Não                       |
+| Visitante      | —                                          | Não           | Não                       |
 
-- [x] Serviço de geocodificação com Nominatim (`src/lib/geo/`), com testes e
-      respeitando a política de uso (User-Agent e 1 requisição/s)
-- [x] Cálculo de distância anúncio–campus com PostGIS
-      (`src/lib/geo/campus-distance.ts`), com testes de integração no banco
-- [ ] Formulário de criar/editar anúncio (React Hook Form + Zod), com
-      geocodificação do endereço ao salvar
-- [ ] Upload de fotos dos anúncios (Cloudinary já escolhido e configurado na
-      foto de perfil: reaproveitar `src/lib/cloudinary/`)
-- [ ] Consulta de busca com PostGIS: filtro por raio até o campus, preço e tipo,
-      ordenada por distância (`ST_DWithin` / `ST_Distance` sobre `geography`,
-      montando os pontos com `geoPoint`; o índice espacial já existe)
-- [ ] Testes de integração da busca por distância (o diferencial do TCC)
-- [ ] Página de listagem com filtros
-- [ ] Mapa com Leaflet + OpenStreetMap mostrando o campus e os anúncios
-- [ ] Página de detalhe do anúncio com links de contato (WhatsApp / e-mail)
+- **Estudante também anuncia** (ex: vaga que abriu na república onde mora).
+- **Busca, mapa e endereço completo são públicos**, sem login.
+- **O contato (WhatsApp e e-mail) só aparece para estudante logado**, e essa
+  decisão é tomada no servidor (o telefone não vai no HTML para os demais).
+  É o que dá sentido ao e-mail institucional: quem anuncia sabe que quem entra
+  em contato é estudante.
 
-Enquanto a Frente A não termina o login, a Frente B pode usar um usuário de
-teste criado direto no banco (Prisma Studio: `npm run db:studio`).
+## Concluído
 
-## Compartilhadas / finais
+- [x] Better Auth com e-mail e senha, confirmação por e-mail e "esqueci minha
+      senha" (#17, #18, #19)
+- [x] Validação do domínio institucional contra `University.emailDomain`,
+      vinculando o usuário à universidade (#17)
+- [x] Página de perfil com nome, WhatsApp e foto (Cloudinary) (#20)
+- [x] Rotas protegidas (`src/proxy.ts`) e layout base com estado de login
+- [x] Seed com universidades e campi reais de Teresina (#21)
+- [x] Geocodificação com Nominatim, com plano B pelo bairro (#22)
+- [x] Distância anúncio–campus com PostGIS, helper `geoPoint` e índice espacial
+      (#23)
+- [x] Docker (#33), Vitest (#34) e E2E de autenticação no CI
 
-- [x] Rodar os testes E2E (Playwright) no CI
-- [x] Dockerfile da aplicação e serviço `app` no `docker-compose.yml`
-- [ ] Testes E2E dos fluxos principais: cadastro → criar anúncio → buscar
-      (cadastro, login, perfil e senha já cobertos em `e2e/auth.spec.ts`)
-- [ ] Deploy (definir onde)
+## Fase 4 — Anúncios
+
+- [ ] #40 Escolha de papel no cadastro (estudante ou anunciante) —
+      **pré-requisito da fase**
+- [ ] #24 Criar anúncio (inclui o campo "número de vagas", que ainda não existe
+      no banco, e o aviso de localização aproximada)
+- [ ] #25 Fotos do anúncio (reaproveitar `src/lib/cloudinary/`)
+- [ ] #42 Página "Meus anúncios"
+- [ ] #26 Editar, pausar/reativar e excluir o próprio anúncio
+- [ ] #27 Página de detalhes do anúncio (pública)
+
+## Fase 5 — Busca
+
+- [ ] #41 Consulta de busca com PostGIS e testes de integração — **o
+      diferencial do TCC**; base das demais tarefas da fase
+- [ ] #28 Listagem pública com paginação
+- [ ] #29 Filtro por distância até o campus (campus do estudante pré-selecionado)
+- [ ] #30 Filtros de preço e tipo de vaga
+- [ ] #31 Mapa com Leaflet + OpenStreetMap
+- [ ] #32 Botão de contato (só para estudante logado)
+
+## Fase 6 — Qualidade e entrega
+
+- [ ] #35 E2E dos fluxos principais: anunciante cria anúncio, visitante busca
+      sem ver o contato, estudante busca e vê o contato
+- [ ] #36 Deploy (banco com PostGIS, SMTP real, variáveis de ambiente)

@@ -12,13 +12,23 @@ apenas filtro por cidade/bairro). Essa parte deve ser bem implementada e testada
 
 ## Escopo do MVP
 
-- Cadastro e autenticação com validação de e-mail institucional (domínio)
+- Cadastro e autenticação com dois papéis (decidido em 28/09/2026; a #40
+  implementa, até lá o código só aceita e-mail institucional):
+  - **Estudante**: só e-mail institucional (domínio de universidade
+    cadastrada), vinculado à universidade
+  - **Anunciante**: qualquer e-mail confirmado, sem universidade
 - Cadastro de campi (nome, latitude/longitude)
-- Cadastro de anúncios (endereço, preço, tipo, fotos, descrição)
+- Cadastro de anúncios (endereço, preço, tipo, fotos, descrição) pelos **dois
+  papéis** (estudante anuncia vaga em república)
 - Geocodificação automática do endereço do anúncio (Nominatim)
 - Busca/listagem com filtros: preço, tipo de vaga, distância até o campus
 - Mapa interativo com anúncios e localização do campus
-- Contato via link direto (WhatsApp ou e-mail), sem chat interno
+- **Busca, mapa e endereço completo são públicos** (sem login)
+- Contato via link direto (WhatsApp ou e-mail), sem chat interno, **só para
+  estudante logado**; decidido no servidor (telefone e e-mail não vão no
+  HTML/JSON para visitante nem anunciante)
+
+Tarefas e decisões de produto: `docs/TAREFAS.md` (espelha as issues do GitHub).
 
 **Fora do escopo** (não implementar sem pedido explícito): chat em tempo real,
 avaliações/reputação, painel admin completo, notificações, score de
