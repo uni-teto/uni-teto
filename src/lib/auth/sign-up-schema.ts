@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { USER_ROLES } from "./roles";
 
 // Mesmos limites de senha configurados no Better Auth (src/lib/auth/server.ts)
 export const PASSWORD_MIN_LENGTH = 8;
@@ -43,6 +44,9 @@ export const passwordsMismatch = {
 
 export const signUpSchema = z
   .object({
+    role: z.enum(USER_ROLES, {
+      error: "Escolha se você quer procurar moradia ou anunciar um imóvel.",
+    }),
     name: nameSchema,
     email: emailSchema,
     password: newPasswordSchema,

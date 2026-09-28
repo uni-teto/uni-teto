@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
             <h1>Esqueci minha senha</h1>
           </CardTitle>
           <CardDescription>
-            Informe seu e-mail institucional e enviaremos um link para você
+            Informe o e-mail da sua conta e enviaremos um link para você
             escolher uma nova senha.
           </CardDescription>
         </CardHeader>

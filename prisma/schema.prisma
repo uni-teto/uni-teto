@@ -45,15 +45,24 @@ model Campus {
   @@index([universityId])
 }
 
+// Estudante: e-mail institucional, vinculado à universidade, vê o contato dos
+// anúncios. Anunciante: qualquer e-mail, sem universidade. Os dois anunciam.
+enum UserRole {
+  ESTUDANTE
+  ANUNCIANTE
+}
+
 model User {
   id            String      @id @default(cuid())
   name          String
   email         String      @unique
   emailVerified Boolean     @default(false)
   image         String?
+  // Escolhido no cadastro e não muda depois (ver src/lib/auth/roles.ts)
+  role          UserRole    @default(ESTUDANTE)
   // Número usado no link de contato do WhatsApp (apenas dígitos, com DDI)
   whatsapp      String?
-  // Preenchido no cadastro a partir do domínio do e-mail institucional
+  // Preenchido no cadastro do estudante a partir do domínio do e-mail
   universityId  String?
   university    University? @relation(fields: [universityId], references: [id])
   listings      Listing[]

@@ -12,8 +12,7 @@ apenas filtro por cidade/bairro). Essa parte deve ser bem implementada e testada
 
 ## Escopo do MVP
 
-- Cadastro e autenticação com dois papéis (decidido em 28/09/2026; a #40
-  implementa, até lá o código só aceita e-mail institucional):
+- Cadastro e autenticação com dois papéis (decisão de 28/09/2026, #40):
   - **Estudante**: só e-mail institucional (domínio de universidade
     cadastrada), vinculado à universidade
   - **Anunciante**: qualquer e-mail confirmado, sem universidade
@@ -85,6 +84,11 @@ sozinho.
 - Auth: config em `src/lib/auth/server.ts`, cliente em `src/lib/auth/client.ts`,
   rotas em `/api/auth/*`. Domínios permitidos = `University.emailDomain`; a
   checagem roda no hook `databaseHooks.user.create.before` (servidor).
+- Papéis: `role` (`ESTUDANTE` | `ANUNCIANTE`) no `User`, regras em
+  `src/lib/auth/roles.ts`. Escolhido no cadastro e **não muda depois** (o hook
+  `databaseHooks.user.update.before` barra, senão um anunciante viraria
+  estudante pela rota `/api/auth/update-user`). Checar permissões pelo papel
+  da sessão (`session.user.role`), nunca por dado vindo do navegador.
 - Sessão no servidor: `getSession()` de `src/lib/auth/session.ts`; no navegador,
   `authClient.useSession()`. Após login/logout, `router.refresh()`.
 - Login exige e-mail confirmado (`requireEmailVerification`): sem isso não há

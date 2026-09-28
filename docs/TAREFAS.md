@@ -42,8 +42,9 @@ papéis (#40):
 
 ## Fase 4 — Anúncios
 
-- [ ] #40 Escolha de papel no cadastro (estudante ou anunciante) —
-      **pré-requisito da fase**
+- [x] #40 Escolha de papel no cadastro (estudante ou anunciante). Falta só
+      levar cada papel à sua página quando elas existirem: estudante para a
+      busca (#28) e anunciante para "Meus anúncios" (#42)
 - [ ] #24 Criar anúncio (inclui o campo "número de vagas", que ainda não existe
       no banco, e o aviso de localização aproximada)
 - [ ] #25 Fotos do anúncio (reaproveitar `src/lib/cloudinary/`)

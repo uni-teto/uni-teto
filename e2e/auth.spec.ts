@@ -89,7 +89,7 @@ test("esqueci minha senha: redefine e entra com a senha nova", async ({
   await page.goto("/login");
   await page.getByRole("link", { name: "Esqueci minha senha" }).click();
   await expect(page).toHaveURL("/esqueci-senha");
-  await page.getByLabel("E-mail institucional").fill(email);
+  await page.getByLabel("E-mail", { exact: true }).fill(email);
   await page.getByRole("button", { name: "Enviar link" }).click();
   await expect(page.getByRole("status")).toContainText(email);
 

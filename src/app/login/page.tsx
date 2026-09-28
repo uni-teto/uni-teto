@@ -32,7 +32,7 @@ export default async function SignInPage({
             <h1>Entrar</h1>
           </CardTitle>
           <CardDescription>
-            Acesse sua conta com o e-mail institucional.
+            Acesse sua conta com o e-mail que você cadastrou.
           </CardDescription>
         </CardHeader>
         <CardContent>

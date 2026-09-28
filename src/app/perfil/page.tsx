@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ROLE_LABELS } from "@/lib/auth/roles";
 import { signInUrl } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { getCloudinaryConfig } from "@/lib/cloudinary/sign-upload";
@@ -31,6 +32,7 @@ export default async function ProfilePage() {
       email: true,
       image: true,
       whatsapp: true,
+      role: true,
       university: { select: { name: true, acronym: true } },
     },
   });
@@ -54,14 +56,20 @@ export default async function ProfilePage() {
           />
 
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt className="text-muted-foreground">Tipo de conta</dt>
+            <dd>{ROLE_LABELS[user.role]}</dd>
             <dt className="text-muted-foreground">E-mail</dt>
             <dd>{user.email}</dd>
-            <dt className="text-muted-foreground">Universidade</dt>
-            <dd>
-              {user.university
-                ? `${user.university.name} (${user.university.acronym})`
-                : "Não vinculada"}
-            </dd>
+            {user.role === "ESTUDANTE" && (
+              <>
+                <dt className="text-muted-foreground">Universidade</dt>
+                <dd>
+                  {user.university
+                    ? `${user.university.name} (${user.university.acronym})`
+                    : "Não vinculada"}
+                </dd>
+              </>
+            )}
           </dl>
 
           <ProfileForm

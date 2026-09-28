@@ -10,7 +10,14 @@ import {
   type EmailContent,
 } from "@/lib/email/templates";
 import { prisma } from "@/lib/prisma";
-import { DomainNotAllowedError, resolveUniversityId } from "./email-domain";
+import { DomainNotAllowedError } from "./email-domain";
+import {
+  assertRoleUnchanged,
+  InvalidRoleError,
+  RoleChangeNotAllowedError,
+  universityIdForNewUser,
+  USER_ROLES,
+} from "./roles";
 import { FORGOT_PASSWORD_PATH, SIGN_IN_PATH } from "./routes";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "./sign-up-schema";
 
@@ -87,6 +94,9 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
+      // Escolhido no cadastro (ESTUDANTE ou ANUNCIANTE). O Better Auth também
+      // aceitaria na rota de atualizar usuário: o hook `update.before` barra.
+      role: { type: [...USER_ROLES], required: true, input: true },
       // `input: false`: o cliente não pode enviar esses campos no cadastro
       universityId: { type: "string", required: false, input: false },
       whatsapp: { type: "string", required: false, input: false },
@@ -95,11 +105,13 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        // Só aceita e-mail de domínio institucional cadastrado e já vincula
-        // o usuário à universidade. Vale para qualquer forma de cadastro.
+        // Estudante: só e-mail de universidade cadastrada, já vinculado a ela.
+        // Anunciante: qualquer e-mail, sem universidade. Vale para qualquer
+        // forma de cadastro.
         before: async (user) => {
           try {
-            const universityId = await resolveUniversityId(
+            const universityId = await universityIdForNewUser(
+              user.role,
               user.email,
               (domain) =>
                 prisma.university.findUnique({
@@ -112,6 +124,29 @@ export const auth = betterAuth({
             if (error instanceof DomainNotAllowedError) {
               throw new APIError("BAD_REQUEST", {
                 code: "EMAIL_DOMAIN_NOT_ALLOWED",
+                message: error.message,
+              });
+            }
+            if (error instanceof InvalidRoleError) {
+              throw new APIError("BAD_REQUEST", {
+                code: "INVALID_ROLE",
+                message: error.message,
+              });
+            }
+            throw error;
+          }
+        },
+      },
+      update: {
+        // O papel não muda depois do cadastro (senão um anunciante poderia
+        // virar estudante para ver os contatos)
+        before: async (changes) => {
+          try {
+            assertRoleUnchanged(changes);
+          } catch (error) {
+            if (error instanceof RoleChangeNotAllowedError) {
+              throw new APIError("FORBIDDEN", {
+                code: "ROLE_CHANGE_NOT_ALLOWED",
                 message: error.message,
               });
             }
