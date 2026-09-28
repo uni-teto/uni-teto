@@ -27,6 +27,15 @@ describe("haversineDistanceMeters", () => {
     );
   });
 
+  it("não devolve NaN para pontos opostos no globo", () => {
+    const d = haversineDistanceMeters(
+      { latitude: 0, longitude: 0 },
+      { latitude: 0, longitude: 180 },
+    );
+    // Metade da circunferência da Terra (esfera de 6.371 km)
+    expect(d).toBeCloseTo(Math.PI * 6_371_000, 0);
+  });
+
   it("mede 1 grau de latitude como ~111 km", () => {
     const d = haversineDistanceMeters(
       { latitude: 0, longitude: 0 },
@@ -40,6 +49,11 @@ describe("haversineDistanceMeters", () => {
 describe("formatDistance", () => {
   it("usa metros abaixo de 1 km", () => {
     expect(formatDistance(849.6)).toBe("850 m");
+  });
+
+  it('mostra "1 km" (e não "1000 m") logo abaixo de 1 km', () => {
+    expect(formatDistance(999.4)).toBe("999 m");
+    expect(formatDistance(999.6)).toBe("1 km");
   });
 
   it("usa km com vírgula decimal a partir de 1 km", () => {

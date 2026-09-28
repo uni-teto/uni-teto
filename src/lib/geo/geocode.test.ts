@@ -345,6 +345,20 @@ describe("createGeocoder", () => {
     expect(ok.status).toBe("fulfilled");
   });
 
+  it("junta pedidos iguais feitos ao mesmo tempo numa consulta só", async () => {
+    const { geocoder, fetchMock } = setup([
+      jsonResponse([nominatimItem("-5.0892", "-42.8016")]),
+    ]);
+
+    const [first, second] = await Promise.all([
+      geocoder.geocode(address),
+      geocoder.geocode(address),
+    ]);
+
+    expect(second).toEqual(first);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("aceita outra URL base e envia o e-mail de contato", async () => {
     const { geocoder, requestedUrls } = setup([jsonResponse([])], {
       baseUrl: "http://localhost:8088/",
@@ -355,5 +369,115 @@ describe("createGeocoder", () => {
     const url = requestedUrls()[0];
     expect(url.origin + url.pathname).toBe("http://localhost:8088/search");
     expect(url.searchParams.get("email")).toBe("contato@uniteto.dev");
+  });
+});
+
+// Resposta da busca livre "bairro, cidade" (formato real do Nominatim)
+function neighborhoodItem(
+  name: string,
+  opts: { type?: string; city?: string; iso?: string } = {},
+) {
+  return {
+    lat: "-5.1037",
+    lon: "-42.7638",
+    display_name: `${name}, ${opts.city ?? "Teresina"}, Brasil`,
+    name,
+    addresstype: opts.type ?? "quarter",
+    address: {
+      city: opts.city ?? "Teresina",
+      "ISO3166-2-lvl4": opts.iso ?? "BR-PI",
+    },
+  };
+}
+
+describe("plano B pelo bairro (rua fora do OpenStreetMap)", () => {
+  const semRua: AddressInput = {
+    street: "Rua Nova Que Não Está No Mapa",
+    number: "10",
+    neighborhood: "Dirceu Arcoverde",
+    city: "Teresina",
+    state: "PI",
+  };
+
+  it('usa o centro do bairro com precisão "bairro"', async () => {
+    const { geocoder, requestedUrls } = setup([
+      jsonResponse([]),
+      jsonResponse([]),
+      jsonResponse([neighborhoodItem("Dirceu Arcoverde")]),
+    ]);
+
+    await expect(geocoder.geocode(semRua)).resolves.toMatchObject({
+      latitude: -5.1037,
+      longitude: -42.7638,
+      precision: "bairro",
+    });
+    expect(requestedUrls()[2].searchParams.get("q")).toBe(
+      "Dirceu Arcoverde, Teresina",
+    );
+  });
+
+  it('aceita o bairro dividido em partes ("Dirceu Arcoverde I")', async () => {
+    const { geocoder } = setup([
+      jsonResponse([]),
+      jsonResponse([]),
+      jsonResponse([neighborhoodItem("Dirceu Arcoverde I")]),
+    ]);
+
+    const result = await geocoder.geocode(semRua);
+    expect(result?.precision).toBe("bairro");
+  });
+
+  it.each([
+    [
+      "de outra cidade",
+      neighborhoodItem("Dirceu Arcoverde", { city: "Marília", iso: "BR-SP" }),
+    ],
+    [
+      "de outra UF com cidade de mesmo nome",
+      neighborhoodItem("Dirceu Arcoverde", { iso: "BR-MA" }),
+    ],
+    ["com nome só parecido", neighborhoodItem("Dirceu Arcoverde Norte")],
+    [
+      "que não é bairro",
+      neighborhoodItem("Dirceu Arcoverde", { type: "road" }),
+    ],
+    ["que é a cidade inteira", neighborhoodItem("Teresina", { type: "city" })],
+  ])("recusa resultado %s", async (_, item) => {
+    const { geocoder } = setup([
+      jsonResponse([]),
+      jsonResponse([]),
+      jsonResponse([item]),
+    ]);
+    await expect(geocoder.geocode(semRua)).resolves.toBeNull();
+  });
+
+  it('não aceita "Centro Sul" quando o bairro é "Centro"', async () => {
+    const { geocoder } = setup([
+      jsonResponse([]),
+      jsonResponse([]),
+      jsonResponse([neighborhoodItem("Centro Sul", { type: "suburb" })]),
+    ]);
+    await expect(
+      geocoder.geocode({ ...semRua, neighborhood: "Centro" }),
+    ).resolves.toBeNull();
+  });
+
+  it("não busca o bairro se ele não foi informado", async () => {
+    const { geocoder, fetchMock } = setup([jsonResponse([]), jsonResponse([])]);
+
+    await expect(
+      geocoder.geocode({ ...semRua, neighborhood: " " }),
+    ).resolves.toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("não usa o bairro quando a rua foi encontrada", async () => {
+    const { geocoder, fetchMock } = setup([
+      jsonResponse([nominatimItem("-5.09", "-42.80")]),
+    ]);
+
+    const result = await geocoder.geocode(semRua);
+    expect(result?.precision).toBe("rua");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

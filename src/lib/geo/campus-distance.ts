@@ -1,12 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { geoPoint } from "./sql";
 
 // Distância real (em linha reta sobre o elipsoide WGS 84) entre anúncios e um
 // campus, calculada pelo PostGIS. `ST_Distance` sobre `geography` devolve metros.
 //
-// Os pontos são montados a partir das colunas latitude/longitude
-// (ST_MakePoint recebe longitude primeiro; SRID 4326 = WGS 84, o do GPS/OSM).
-// A busca da Fase 5 (#29) usa a mesma expressão com ST_DWithin para filtrar
-// pelo raio.
+// Os pontos vêm de `geoPoint` (./sql.ts), a mesma expressão do índice
+// espacial. A busca da Fase 5 (#29) deve usá-lo também com ST_DWithin para
+// filtrar pelo raio.
 
 export type ListingDistance = {
   listingId: string;
@@ -27,10 +27,7 @@ export async function getListingDistancesToCampus(
   const rows = await prisma.$queryRaw<ListingDistance[]>`
     SELECT
       l."id" AS "listingId",
-      ST_Distance(
-        ST_SetSRID(ST_MakePoint(l."longitude", l."latitude"), 4326)::geography,
-        ST_SetSRID(ST_MakePoint(c."longitude", c."latitude"), 4326)::geography
-      ) AS "distanceMeters"
+      ST_Distance(${geoPoint("l")}, ${geoPoint("c")}) AS "distanceMeters"
     FROM "Listing" l
     CROSS JOIN "Campus" c
     WHERE c."id" = ${campusId}

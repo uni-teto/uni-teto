@@ -47,15 +47,19 @@ sozinho.
 - Antes de commitar: `npm run format`, `npm run lint`, `npm run typecheck`, `npm run test`.
 - Prisma 7: config em `prisma.config.ts`, client gerado em `src/generated/prisma`
   (importar de `@/generated/prisma/client`), instância única em `src/lib/prisma.ts`.
-- Coordenadas em colunas `latitude`/`longitude`; distância via PostGIS em SQL
-  (`ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography`), como em
-  `src/lib/geo/campus-distance.ts`. `src/lib/geo/distance.ts` tem Haversine,
+- Coordenadas em colunas `latitude`/`longitude`; distância via PostGIS em SQL,
+  montando o ponto **sempre** com `geoPoint("alias")` de `src/lib/geo/sql.ts`
+  (ex: `src/lib/geo/campus-distance.ts`). É a mesma expressão do índice GIST
+  `Listing_location_idx`: escrita diferente, o índice deixa de ser usado. `src/lib/geo/distance.ts` tem Haversine,
   `metersToKm` e `formatDistance` para exibição/fallback.
 - Geocodificação: `geocodeAddress` de `src/lib/geo/geocode.ts` (Nominatim, fila
   de 1 req/s, cache em memória). Passe bairro e CEP: o número costuma não
-  estar no OSM e eles escolhem o trecho certo da rua. Retorna `null` se não achar e lança
-  `GeocodingError` se o serviço falhar; `precision: "rua"` indica que o número
-  não foi encontrado (vale avisar o usuário). UFs em `src/lib/geo/states.ts`.
+  estar no OSM e eles escolhem o trecho certo da rua; o bairro também é o plano
+  B quando a rua não existe no OSM. Retorna `null` se não achar e lança
+  `GeocodingError` se o serviço falhar. `precision`: `"numero"` (exato),
+  `"rua"` (número não encontrado) ou `"bairro"` (centro do bairro); avise o
+  usuário nos dois últimos. Não há plano B por CEP: o Nominatim devolve o
+  centro da cidade para CEPs de Teresina. UFs em `src/lib/geo/states.ts`.
 - Preços em centavos (`priceCents`).
 - WhatsApp guardado só com dígitos e DDI (`5586999998888`):
   `normalizeWhatsapp`/`formatWhatsapp` em `src/lib/profile/whatsapp.ts`.

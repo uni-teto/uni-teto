@@ -15,11 +15,17 @@ import { BRAZILIAN_STATES, type StateCode } from "./states";
 // Quando o número não existe, ele devolve os trechos da rua (um por bairro/CEP)
 // sem avisar. Por isso a precisão vem da resposta (`address.house_number`) e o
 // bairro/CEP informados servem para escolher o trecho certo.
+//
+// Se nem a rua existe no OSM (comum em ruas novas), cai para o centro do
+// bairro, com checagem rígida: a busca por bairro devolve lugares de outras
+// cidades quando não acha. A busca por CEP NÃO é usada como plano B: em
+// Teresina ela devolve o centro da cidade para qualquer CEP (testado em
+// 28/09/2026), o que colocaria o anúncio no lugar errado sem avisar.
 
 export type AddressInput = {
   street: string;
   number: string;
-  /** Ajuda a escolher o trecho certo de ruas longas */
+  /** Escolhe o trecho certo de ruas longas e é o plano B se a rua não existir */
   neighborhood?: string;
   city: string;
   /** Sigla da UF, ex: "PI" */
@@ -32,7 +38,9 @@ export type GeocodePrecision =
   /** O ponto é o do número da casa/prédio */
   | "numero"
   /** O número não está no OpenStreetMap: o ponto é um trecho da rua */
-  | "rua";
+  | "rua"
+  /** Nem a rua está no OpenStreetMap: o ponto é o centro do bairro */
+  | "bairro";
 
 export type GeocodeResult = {
   latitude: number;
@@ -58,6 +66,9 @@ const nominatimResultSchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
   lon: z.coerce.number().min(-180).max(180),
   display_name: z.string(),
+  name: z.string().optional(),
+  /** Tipo do lugar, ex: "road", "suburb", "city" */
+  addresstype: z.string().optional(),
   address: z
     .object({
       house_number: z.string().optional(),
@@ -66,6 +77,9 @@ const nominatimResultSchema = z.object({
       neighbourhood: z.string().optional(),
       quarter: z.string().optional(),
       city_district: z.string().optional(),
+      city: z.string().optional(),
+      town: z.string().optional(),
+      municipality: z.string().optional(),
       "ISO3166-2-lvl4": z.string().optional(),
     })
     .optional(),
@@ -94,10 +108,7 @@ function normalize(text: string) {
 
 /** Para comparar nomes: sem acento, minúsculo, espaços simples. */
 function comparable(text: string) {
-  return normalize(text)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+  return normalize(text).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }
 
 function digits(text: string) {
@@ -110,22 +121,59 @@ function houseNumber(number: string) {
   return n && !/^s\.?\/?n\.?$/i.test(n) ? n : "";
 }
 
+function isInState(result: NominatimResult, state: StateCode) {
+  const iso = result.address?.["ISO3166-2-lvl4"];
+  return !iso || iso === `BR-${state}`;
+}
+
+const NEIGHBORHOOD_TYPES = new Set([
+  "suburb",
+  "quarter",
+  "neighbourhood",
+  "city_district",
+]);
+
+// Sufixo de bairros divididos em partes, ex: "Dirceu Arcoverde II", "Mocambinho 2"
+const NEIGHBORHOOD_PART = /^([ivx]+|\d+)$/;
+
+/**
+ * Aceita o resultado da busca por bairro só se ele for um bairro da mesma
+ * cidade e UF, com o mesmo nome (ou o nome seguido da numeração da parte).
+ * "Centro Sul" não vale para "Centro".
+ */
+function isSameNeighborhood(result: NominatimResult, address: AddressInput) {
+  const a = result.address ?? {};
+  const city = a.city ?? a.town ?? a.municipality ?? "";
+  const wanted = comparable(address.neighborhood ?? "");
+  const name = comparable(result.name ?? "");
+  const sameName =
+    name === wanted ||
+    (name.startsWith(`${wanted} `) &&
+      NEIGHBORHOOD_PART.test(name.slice(wanted.length + 1)));
+
+  return (
+    wanted !== "" &&
+    sameName &&
+    NEIGHBORHOOD_TYPES.has(result.addresstype ?? "") &&
+    a["ISO3166-2-lvl4"] === `BR-${address.state}` &&
+    comparable(city) === comparable(address.city)
+  );
+}
+
 /**
  * Escolhe o melhor resultado: descarta os de outra UF e prefere, nesta ordem,
  * o que tem o número da casa, o do mesmo CEP e o do mesmo bairro. Em empate,
  * mantém a ordem de relevância do Nominatim.
  */
 function pickBest(results: NominatimResult[], address: AddressInput) {
-  const expectedIso = `BR-${address.state}`;
   const zip = digits(address.zipCode ?? "");
   const neighborhood = comparable(address.neighborhood ?? "");
 
   let best: NominatimResult | null = null;
   let bestScore = -1;
   for (const result of results) {
+    if (!isInState(result, address.state)) continue;
     const a = result.address ?? {};
-    const iso = a["ISO3166-2-lvl4"];
-    if (iso && iso !== expectedIso) continue;
 
     let score = 0;
     if (a.house_number) score += 4;
@@ -146,6 +194,18 @@ function pickBest(results: NominatimResult[], address: AddressInput) {
   return best;
 }
 
+function toResult(
+  result: NominatimResult,
+  precision: GeocodePrecision,
+): GeocodeResult {
+  return {
+    latitude: result.lat,
+    longitude: result.lon,
+    precision,
+    displayName: result.display_name,
+  };
+}
+
 export function createGeocoder(options: GeocoderOptions = {}) {
   const baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
   const userAgent = options.userAgent ?? DEFAULT_USER_AGENT;
@@ -158,7 +218,10 @@ export function createGeocoder(options: GeocoderOptions = {}) {
     options.sleep ??
     ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
 
-  const cache = new Map<string, GeocodeResult | null>();
+  // Guarda a consulta (Promise), não só o resultado: pedidos iguais feitos ao
+  // mesmo tempo (ex: duplo clique em "Salvar") viram uma consulta só.
+  // Quando enche, remove sempre o mais antigo (FIFO, não LRU).
+  const cache = new Map<string, Promise<GeocodeResult | null>>();
   // Fila: cada requisição espera a anterior e o intervalo mínimo
   let queue: Promise<unknown> = Promise.resolve();
   let lastRequestAt = -Infinity;
@@ -174,15 +237,11 @@ export function createGeocoder(options: GeocoderOptions = {}) {
     return run;
   }
 
-  async function search(
-    street: string,
-    address: AddressInput,
+  async function request(
+    query: Record<string, string>,
   ): Promise<NominatimResult[]> {
     const params = new URLSearchParams({
-      street,
-      city: normalize(address.city),
-      state: BRAZILIAN_STATES[address.state],
-      country: "Brasil",
+      ...query,
       countrycodes: "br",
       format: "jsonv2",
       addressdetails: "1",
@@ -227,12 +286,51 @@ export function createGeocoder(options: GeocoderOptions = {}) {
     });
   }
 
-  async function geocode(address: AddressInput): Promise<GeocodeResult | null> {
+  /** Busca estruturada pela rua (com ou sem número). */
+  function searchStreet(street: string, address: AddressInput) {
+    return request({
+      street,
+      city: normalize(address.city),
+      state: BRAZILIAN_STATES[address.state],
+      country: "Brasil",
+    });
+  }
+
+  /**
+   * Busca livre "bairro, cidade". Acrescentar UF e país faz o Nominatim não
+   * achar nada, por isso a UF é conferida na resposta (`isSameNeighborhood`).
+   */
+  function searchNeighborhood(address: AddressInput) {
+    return request({
+      q: `${normalize(address.neighborhood ?? "")}, ${normalize(address.city)}`,
+    });
+  }
+
+  async function lookup(address: AddressInput): Promise<GeocodeResult | null> {
     const street = normalize(address.street);
     const number = houseNumber(address.number);
+
+    // Com número o Nominatim já cai na rua se não achar a casa; a busca só
+    // pela rua fica para quando o número atrapalha (ex: "1100-A")
+    const queries = number ? [`${number} ${street}`, street] : [street];
+    for (const query of queries) {
+      const best = pickBest(await searchStreet(query, address), address);
+      if (best) {
+        return toResult(best, best.address?.house_number ? "numero" : "rua");
+      }
+    }
+
+    if (!normalize(address.neighborhood ?? "")) return null;
+    const neighborhood = (await searchNeighborhood(address)).find((result) =>
+      isSameNeighborhood(result, address),
+    );
+    return neighborhood ? toResult(neighborhood, "bairro") : null;
+  }
+
+  function geocode(address: AddressInput): Promise<GeocodeResult | null> {
     const key = [
-      street,
-      number,
+      normalize(address.street),
+      houseNumber(address.number),
       address.neighborhood ?? "",
       address.city,
       address.state,
@@ -241,31 +339,19 @@ export function createGeocoder(options: GeocoderOptions = {}) {
       .map(comparable)
       .join("|");
 
-    if (cache.has(key)) return cache.get(key) ?? null;
+    const cached = cache.get(key);
+    if (cached) return cached;
 
-    // Com número o Nominatim já cai na rua se não achar a casa; a busca só
-    // pela rua fica para quando o número atrapalha (ex: "1100-A")
-    const queries = number ? [`${number} ${street}`, street] : [street];
-
-    let best: NominatimResult | null = null;
-    for (const query of queries) {
-      best = pickBest(await search(query, address), address);
-      if (best) break;
-    }
-
-    const result: GeocodeResult | null = best && {
-      latitude: best.lat,
-      longitude: best.lon,
-      precision: best.address?.house_number ? "numero" : "rua",
-      displayName: best.display_name,
-    };
-
+    const pending = lookup(address);
     if (cache.size >= cacheSize) {
-      // Remove o mais antigo (Map mantém a ordem de inserção)
       cache.delete(cache.keys().next().value!);
     }
-    cache.set(key, result);
-    return result;
+    cache.set(key, pending);
+    // Falha do serviço não fica no cache: a próxima tentativa consulta de novo
+    pending.catch(() => {
+      if (cache.get(key) === pending) cache.delete(key);
+    });
+    return pending;
   }
 
   return { geocode };
@@ -277,7 +363,8 @@ let defaultGeocoder: ReturnType<typeof createGeocoder> | undefined;
  * Converte um endereço em latitude/longitude pelo Nominatim.
  *
  * Retorna `null` se o endereço não for encontrado e lança `GeocodingError`
- * se o serviço falhar. Configuração opcional: `NOMINATIM_URL`,
+ * se o serviço falhar. Confira `precision`: "rua" e "bairro" são aproximados
+ * e vale avisar o usuário. Configuração opcional: `NOMINATIM_URL`,
  * `NOMINATIM_USER_AGENT` e `NOMINATIM_EMAIL`.
  */
 export function geocodeAddress(address: AddressInput) {

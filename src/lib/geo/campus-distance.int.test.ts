@@ -2,6 +2,7 @@
 // `npm run test:integration` (precisa do `docker compose up -d` e das migrations).
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
+import { universities } from "@/lib/seed/universities";
 import {
   getListingDistancesToCampus,
   getListingDistanceToCampus,
@@ -13,11 +14,14 @@ const run = `int-geo-${Date.now()}`;
 const universityId = `${run}-uni`;
 const ownerId = `${run}-owner`;
 
-// Campus Ministro Petrônio Portella (UFPI), Teresina
+// Mesmas coordenadas do seed: Campus Ministro Petrônio Portella (UFPI)
+const ufpi = universities
+  .find((u) => u.id === "ufpi")!
+  .campuses.find((c) => c.id === "ufpi-petronio-portella")!;
 const campus = {
   id: `${run}-campus`,
-  latitude: -5.0561,
-  longitude: -42.7962,
+  latitude: ufpi.latitude,
+  longitude: ufpi.longitude,
 };
 // Campus fictício no Equador, para conferir o elipsoide
 const equatorCampus = { id: `${run}-equator`, latitude: 0, longitude: 0 };

@@ -33,7 +33,8 @@ Marque `[x]` ao concluir. Como os dois trabalham direto na `dev`, façam
 - [ ] Upload de fotos dos anúncios (Cloudinary já escolhido e configurado na
       foto de perfil: reaproveitar `src/lib/cloudinary/`)
 - [ ] Consulta de busca com PostGIS: filtro por raio até o campus, preço e tipo,
-      ordenada por distância (`ST_DWithin` / `ST_Distance` sobre `geography`)
+      ordenada por distância (`ST_DWithin` / `ST_Distance` sobre `geography`,
+      montando os pontos com `geoPoint`; o índice espacial já existe)
 - [ ] Testes de integração da busca por distância (o diferencial do TCC)
 - [ ] Página de listagem com filtros
 - [ ] Mapa com Leaflet + OpenStreetMap mostrando o campus e os anúncios
