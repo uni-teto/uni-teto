@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { formatDistance, haversineDistanceMeters } from "./distance";
+import {
+  formatDistance,
+  haversineDistanceMeters,
+  metersToKm,
+} from "./distance";
 
 describe("haversineDistanceMeters", () => {
   it("retorna 0 para o mesmo ponto", () => {
@@ -41,5 +45,18 @@ describe("formatDistance", () => {
   it("usa km com vírgula decimal a partir de 1 km", () => {
     expect(formatDistance(1234)).toBe("1,2 km");
     expect(formatDistance(3000)).toBe("3 km");
+  });
+});
+
+describe("metersToKm", () => {
+  it("converte com 1 casa decimal por padrão", () => {
+    expect(metersToKm(1234)).toBe(1.2);
+    expect(metersToKm(1250)).toBe(1.3);
+    expect(metersToKm(0)).toBe(0);
+  });
+
+  it("aceita outra quantidade de casas", () => {
+    expect(metersToKm(1234.5, 2)).toBe(1.23);
+    expect(metersToKm(1500, 0)).toBe(2);
   });
 });

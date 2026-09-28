@@ -108,21 +108,22 @@ achar que todos os arquivos foram apagados (se acontecer, `git reset` resolve).
 
 ## Scripts
 
-| Comando                | O que faz                                                                             |
-| ---------------------- | ------------------------------------------------------------------------------------- |
-| `npm run dev`          | Servidor de desenvolvimento                                                           |
-| `npm run build`        | Build de produção                                                                     |
-| `npm run lint`         | ESLint                                                                                |
-| `npm run format`       | Formata o código com o Prettier                                                       |
-| `npm run format:check` | Verifica a formatação (roda no CI)                                                    |
-| `npm run typecheck`    | Checagem de tipos do TypeScript                                                       |
-| `npm run test`         | Testes unitários (Vitest)                                                             |
-| `npm run test:watch`   | Vitest em modo watch                                                                  |
-| `npm run test:e2e`     | Testes ponta a ponta (Playwright). Na primeira vez: `npx playwright install chromium` |
-| `npm run db:migrate`   | Cria/aplica migrations e regenera o Prisma Client                                     |
-| `npm run db:seed`      | Cadastra universidades e campi iniciais (`src/lib/seed/`)                             |
-| `npm run db:generate`  | Regenera o Prisma Client                                                              |
-| `npm run db:studio`    | Abre o Prisma Studio para ver os dados                                                |
+| Comando                    | O que faz                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------- |
+| `npm run dev`              | Servidor de desenvolvimento                                                           |
+| `npm run build`            | Build de produção                                                                     |
+| `npm run lint`             | ESLint                                                                                |
+| `npm run format`           | Formata o código com o Prettier                                                       |
+| `npm run format:check`     | Verifica a formatação (roda no CI)                                                    |
+| `npm run typecheck`        | Checagem de tipos do TypeScript                                                       |
+| `npm run test`             | Testes unitários (Vitest)                                                             |
+| `npm run test:watch`       | Vitest em modo watch                                                                  |
+| `npm run test:integration` | Testes de integração com o banco (PostGIS); precisa do `docker compose up -d`         |
+| `npm run test:e2e`         | Testes ponta a ponta (Playwright). Na primeira vez: `npx playwright install chromium` |
+| `npm run db:migrate`       | Cria/aplica migrations e regenera o Prisma Client                                     |
+| `npm run db:seed`          | Cadastra universidades e campi iniciais (`src/lib/seed/`)                             |
+| `npm run db:generate`      | Regenera o Prisma Client                                                              |
+| `npm run db:studio`        | Abre o Prisma Studio para ver os dados                                                |
 
 ## Estrutura
 

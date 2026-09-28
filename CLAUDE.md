@@ -47,8 +47,15 @@ sozinho.
 - Antes de commitar: `npm run format`, `npm run lint`, `npm run typecheck`, `npm run test`.
 - Prisma 7: config em `prisma.config.ts`, client gerado em `src/generated/prisma`
   (importar de `@/generated/prisma/client`), instância única em `src/lib/prisma.ts`.
-- Coordenadas em colunas `latitude`/`longitude`; distância via PostGIS em SQL.
-  `src/lib/geo/distance.ts` tem Haversine para exibição/fallback.
+- Coordenadas em colunas `latitude`/`longitude`; distância via PostGIS em SQL
+  (`ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography`), como em
+  `src/lib/geo/campus-distance.ts`. `src/lib/geo/distance.ts` tem Haversine,
+  `metersToKm` e `formatDistance` para exibição/fallback.
+- Geocodificação: `geocodeAddress` de `src/lib/geo/geocode.ts` (Nominatim, fila
+  de 1 req/s, cache em memória). Passe bairro e CEP: o número costuma não
+  estar no OSM e eles escolhem o trecho certo da rua. Retorna `null` se não achar e lança
+  `GeocodingError` se o serviço falhar; `precision: "rua"` indica que o número
+  não foi encontrado (vale avisar o usuário). UFs em `src/lib/geo/states.ts`.
 - Preços em centavos (`priceCents`).
 - WhatsApp guardado só com dígitos e DDI (`5586999998888`):
   `normalizeWhatsapp`/`formatWhatsapp` em `src/lib/profile/whatsapp.ts`.
@@ -81,6 +88,9 @@ sozinho.
 - Componentes de UI: `npx shadcn@latest add <nome>` (vão para `src/components/ui`).
 - Testes unitários ao lado do código (`*.test.ts`); E2E em `e2e/` (precisam do
   banco com seed e do Mailpit; links dos e-mails via `e2e/support/mailpit.ts`).
+- Testes de integração com o banco (ex: consultas PostGIS): `*.int.test.ts`,
+  rodam com `npm run test:integration` (fora do `npm run test`; no CI, no job
+  `e2e`). Criam dados com prefixo único e apagam no `afterAll`.
 
 ## Fluxo Git
 

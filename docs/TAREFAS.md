@@ -24,8 +24,10 @@ Marque `[x]` ao concluir. Como os dois trabalham direto na `dev`, façam
 
 ## Frente B — Anúncios, busca por distância e mapa
 
-- [ ] Serviço de geocodificação com Nominatim (`src/lib/geo/`), com testes e
+- [x] Serviço de geocodificação com Nominatim (`src/lib/geo/`), com testes e
       respeitando a política de uso (User-Agent e 1 requisição/s)
+- [x] Cálculo de distância anúncio–campus com PostGIS
+      (`src/lib/geo/campus-distance.ts`), com testes de integração no banco
 - [ ] Formulário de criar/editar anúncio (React Hook Form + Zod), com
       geocodificação do endereço ao salvar
 - [ ] Upload de fotos dos anúncios (Cloudinary já escolhido e configurado na

@@ -42,6 +42,7 @@ jobs:
           BETTER_AUTH_SECRET: ci-build-secret-sem-uso-real-0123456789
           BETTER_AUTH_URL: http://localhost:3000
 
+  # Testes que precisam do banco: integração (Vitest) e E2E (Playwright)
   e2e:
     runs-on: ubuntu-latest
 
@@ -94,6 +95,9 @@ jobs:
         run: |
           npm run db:deploy
           npm run db:seed
+
+      - name: Rodar testes de integração (PostGIS)
+        run: npm run test:integration
 
       - name: Rodar testes E2E
         run: npm run test:e2e

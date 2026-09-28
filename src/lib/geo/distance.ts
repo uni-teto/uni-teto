@@ -31,6 +31,12 @@ export function haversineDistanceMeters(
   return 2 * EARTH_RADIUS_METERS * Math.asin(Math.sqrt(h));
 }
 
+/** Converte metros em quilômetros, com `decimals` casas (padrão: 1). */
+export function metersToKm(meters: number, decimals = 1): number {
+  const factor = 10 ** decimals;
+  return Math.round((meters / 1000) * factor) / factor;
+}
+
 /** Formata uma distância para exibição, ex: "850 m" ou "1,2 km". */
 export function formatDistance(meters: number): string {
   if (meters < 1000) return `${Math.round(meters)} m`;
