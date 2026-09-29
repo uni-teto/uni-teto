@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import {
   editListingPath,
+  listingPath,
   listingPhotosPath,
   MY_LISTINGS_PATH,
   NEW_LISTING_PATH,
@@ -135,6 +136,15 @@ export default async function MyListingsPage() {
                   </p>
 
                   <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                    <Link
+                      href={listingPath(listing.id)}
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                      })}
+                    >
+                      Ver
+                    </Link>
                     <Link
                       href={editListingPath(listing.id)}
                       className={buttonVariants({

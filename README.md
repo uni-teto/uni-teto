@@ -141,6 +141,7 @@ achar que todos os arquivos foram apagados (se acontecer, `git reset` resolve).
 prisma/              schema e migrations do banco
 src/app/             rotas (Next.js App Router)
 src/components/ui/   componentes do shadcn/ui (npx shadcn@latest add <nome>)
+src/components/map/  mapa (Leaflet + OpenStreetMap), carregado só no navegador
 src/lib/             código compartilhado (prisma, geo, utils)
 src/generated/       Prisma Client gerado (não versionado)
 e2e/                 testes Playwright

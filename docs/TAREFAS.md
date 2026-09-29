@@ -49,11 +49,13 @@ papéis (#40):
       resumo com "Adicionar fotos" e "Ver meus anúncios"
 - [x] #25 Fotos do anúncio (`/anuncios/<id>/fotos`). E2E com Cloudinary falso
       e testado com a conta real (envio, capa, remoção e foto de perfil)
-- [x] #42 Página "Meus anúncios" (`/meus-anuncios`). Falta o botão "Ver" o
-      anúncio, que depende da página de detalhes (#27)
+- [x] #42 Página "Meus anúncios" (`/meus-anuncios`), com "Ver", "Editar",
+      "Fotos", "Pausar" e "Excluir"
 - [x] #26 Editar (`/anuncios/<id>/editar`), pausar/reativar e excluir o
       próprio anúncio
-- [ ] #27 Página de detalhes do anúncio (pública)
+- [x] #27 Página de detalhes do anúncio (`/anuncios/<id>`, pública): fotos,
+      endereço, mapa, distância até o campus (`?campus=` ou os da universidade
+      do estudante) e contato. Pausado só o dono vê; os outros recebem 404
 
 ## Fase 5 — Busca
 
@@ -62,8 +64,10 @@ papéis (#40):
 - [ ] #28 Listagem pública com paginação
 - [ ] #29 Filtro por distância até o campus (campus do estudante pré-selecionado)
 - [ ] #30 Filtros de preço e tipo de vaga
-- [ ] #31 Mapa com Leaflet + OpenStreetMap
-- [ ] #32 Botão de contato (só para estudante logado)
+- [ ] #31 Mapa com Leaflet + OpenStreetMap (o Leaflet já entrou na #27:
+      `src/components/map/`)
+- [ ] #32 Botão de contato (só para estudante logado). A regra e os links já
+      estão em `src/lib/listings/contact.ts` e na página do anúncio (#27)
 
 ## Fase 6 — Qualidade e entrega
 

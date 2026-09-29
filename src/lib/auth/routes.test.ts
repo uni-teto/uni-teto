@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   editListingPath,
   homeForRole,
+  listingPath,
   listingPhotosPath,
   safeRedirectPath,
   signInUrl,
@@ -51,6 +52,7 @@ describe("homeForRole", () => {
 
 describe("caminhos do anúncio", () => {
   it("codifica o id na URL", () => {
+    expect(listingPath("abc")).toBe("/anuncios/abc");
     expect(editListingPath("abc")).toBe("/anuncios/abc/editar");
     expect(listingPhotosPath("a/b")).toBe("/anuncios/a%2Fb/fotos");
   });

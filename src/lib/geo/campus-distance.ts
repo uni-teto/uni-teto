@@ -50,3 +50,37 @@ export async function getListingDistanceToCampus(
   const [row] = await getListingDistancesToCampus(campusId, [listingId]);
   return row?.distanceMeters ?? null;
 }
+
+export type CampusDistance = {
+  campusId: string;
+  /** Distância em metros até o anúncio */
+  distanceMeters: number;
+};
+
+/**
+ * Distância de um anúncio até cada campus informado, do mais perto para o mais
+ * longe (página de detalhes, #27). Campi inexistentes são ignorados; anúncio
+ * inexistente retorna `[]`.
+ */
+export async function getCampusDistancesToListing(
+  listingId: string,
+  campusIds: string[],
+): Promise<CampusDistance[]> {
+  if (campusIds.length === 0) return [];
+
+  const rows = await prisma.$queryRaw<CampusDistance[]>`
+    SELECT
+      c."id" AS "campusId",
+      ST_Distance(${geoPoint("l")}, ${geoPoint("c")}) AS "distanceMeters"
+    FROM "Listing" l
+    CROSS JOIN "Campus" c
+    WHERE l."id" = ${listingId}
+      AND c."id" = ANY(${campusIds})
+    ORDER BY "distanceMeters", c."id"
+  `;
+
+  return rows.map((row) => ({
+    campusId: row.campusId,
+    distanceMeters: Number(row.distanceMeters),
+  }));
+}

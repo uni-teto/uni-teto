@@ -31,7 +31,11 @@ import {
   LISTING_TYPE_LABELS,
   LISTING_TYPES,
 } from "@/lib/listings/listing-types";
-import { listingPhotosPath, MY_LISTINGS_PATH } from "@/lib/auth/routes";
+import {
+  listingPath,
+  listingPhotosPath,
+  MY_LISTINGS_PATH,
+} from "@/lib/auth/routes";
 import { locationNotice } from "@/lib/listings/location-notice";
 import { maskZipCodeInput } from "@/lib/listings/zip-code";
 import { updateListingAction } from "./[id]/editar/actions";
@@ -150,6 +154,12 @@ export function ListingForm(
             className={buttonVariants()}
           >
             Adicionar fotos
+          </Link>
+          <Link
+            href={listingPath(published.listingId)}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Ver anúncio
           </Link>
           <Link
             href={MY_LISTINGS_PATH}

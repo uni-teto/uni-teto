@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { universities } from "@/lib/seed/universities";
 import {
+  getCampusDistancesToListing,
   getListingDistancesToCampus,
   getListingDistanceToCampus,
 } from "./campus-distance";
@@ -155,5 +156,30 @@ describe("getListingDistancesToCampus (PostGIS)", () => {
     await expect(
       getListingDistanceToCampus(listingId("centro"), `${run}-sem-campus`),
     ).resolves.toBeNull();
+  });
+});
+
+describe("getCampusDistancesToListing (PostGIS)", () => {
+  it("ordena os campi do mais perto para o mais longe e ignora os inexistentes", async () => {
+    const rows = await getCampusDistancesToListing(listingId("centro"), [
+      equatorCampus.id,
+      campus.id,
+      `${run}-sem-campus`,
+    ]);
+
+    expect(rows.map((r) => r.campusId)).toEqual([campus.id, equatorCampus.id]);
+    const expected = haversineDistanceMeters(places.centro, campus);
+    expect(Math.abs(rows[0].distanceMeters - expected) / expected).toBeLessThan(
+      0.01,
+    );
+  });
+
+  it("aceita lista vazia e anúncio inexistente", async () => {
+    await expect(
+      getCampusDistancesToListing(listingId("centro"), []),
+    ).resolves.toEqual([]);
+    await expect(
+      getCampusDistancesToListing(`${run}-nao-existe`, [campus.id]),
+    ).resolves.toEqual([]);
   });
 });

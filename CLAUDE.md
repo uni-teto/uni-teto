@@ -88,6 +88,15 @@ sozinho.
   geocodifica de novo se o endereço mudou (`addressChanged`). Caminhos das
   páginas em `src/lib/auth/routes.ts` (`editListingPath`, `listingPhotosPath`,
   `MY_LISTINGS_PATH`).
+- Página pública do anúncio: `src/app/anuncios/[id]/page.tsx` (`listingPath`).
+  Pausado só aparece para o dono (outros: 404). Contato: `contactBlockFor` e
+  `listingContact` de `src/lib/listings/contact.ts`; sem permissão, o e-mail e
+  o WhatsApp do dono nem são buscados no banco. Distância aos campi com
+  `getCampusDistancesToListing`.
+- Mapa: `src/components/map/` (react-leaflet, só no navegador via
+  `LazyListingMap`, com `ssr: false`). Marcadores em `CircleMarker`, sem o
+  ícone padrão do Leaflet (as imagens dele não vêm com o bundler). Nos E2E os
+  tiles do OSM são bloqueados com `context.route`.
 - Ações sobre um anúncio (fotos, editar, pausar, excluir): começar com
   `requireOwnedListing(id)` de `src/lib/listings/ownership.ts`; páginas do dono
   usam `findFirst({ where: { id, ownerId } })` e `notFound()` para os outros.

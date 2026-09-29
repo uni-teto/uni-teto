@@ -14,6 +14,11 @@ export const NEW_LISTING_PATH = "/anuncios/novo";
 
 export const MY_LISTINGS_PATH = "/meus-anuncios";
 
+/** Página pública de detalhes do anúncio. */
+export function listingPath(listingId: string) {
+  return `/anuncios/${encodeURIComponent(listingId)}`;
+}
+
 /** Página de edição de um anúncio (só o dono). */
 export function editListingPath(listingId: string) {
   return `/anuncios/${encodeURIComponent(listingId)}/editar`;
