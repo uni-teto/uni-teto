@@ -74,6 +74,11 @@ sozinho.
 - Anúncios: regras em `src/lib/listings/` (schema Zod compartilhado entre
   formulário e Server Action, `createListing` valida, geocodifica e salva).
   Sem coordenadas o anúncio não é salvo. CEP guardado só com dígitos.
+- Endereço pelo CEP: o formulário consulta o ViaCEP no navegador
+  (`lookupZipCode` de `src/lib/listings/via-cep.ts`) e preenche rua, bairro,
+  cidade e estado; cidade e estado começam vazios. O schema confere se o CEP
+  é do estado escolhido (`stateForZipCode`, faixas dos Correios), sem depender
+  do ViaCEP. Nos E2E o ViaCEP é interceptado (`e2e/support/via-cep.ts`).
 - WhatsApp guardado só com dígitos e DDI (`5586999998888`):
   `normalizeWhatsapp`/`formatWhatsapp` em `src/lib/profile/whatsapp.ts`.
 - Fotos: `src/lib/cloudinary/`. O servidor assina o upload fixando o

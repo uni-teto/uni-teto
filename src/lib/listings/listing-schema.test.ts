@@ -62,6 +62,36 @@ describe("listingSchema", () => {
     expect(errors.state).toEqual(["Escolha o estado."]);
   });
 
+  it("recusa CEP de outro estado (Timon-MA com Piauí)", () => {
+    const errors = errorsOf({ ...valid, zipCode: "65633-330", state: "PI" });
+    expect(errors.zipCode).toEqual([
+      "Esse CEP é de outro estado (MA - Maranhão). Confira o CEP ou o estado.",
+    ]);
+    expect(
+      listingSchema.safeParse({
+        ...valid,
+        zipCode: "65633-330",
+        city: "Timon",
+        state: "MA",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("avisa do CEP de outro estado junto com os outros erros", () => {
+    const errors = errorsOf({
+      ...valid,
+      title: "",
+      zipCode: "65633-330",
+      state: "PI",
+    });
+    expect(errors.title).toBeDefined();
+    expect(errors.zipCode?.[0]).toMatch(/^Esse CEP é de outro estado/);
+    // CEP incompleto: só o erro do próprio CEP
+    expect(errorsOf({ ...valid, zipCode: "6563" }).zipCode).toEqual([
+      "Informe o CEP com 8 dígitos.",
+    ]);
+  });
+
   it("exige os campos do endereço", () => {
     const errors = errorsOf({ ...valid, street: " ", neighborhood: "" });
     expect(errors.street).toEqual(["Informe a rua."]);

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { MapPinIcon, TriangleAlertIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { FormField } from "@/components/form-field";
@@ -37,11 +37,13 @@ import {
   MY_LISTINGS_PATH,
 } from "@/lib/auth/routes";
 import { locationNotice } from "@/lib/listings/location-notice";
-import { maskZipCodeInput } from "@/lib/listings/zip-code";
+import { lookupZipCode } from "@/lib/listings/via-cep";
+import { maskZipCodeInput, normalizeZipCode } from "@/lib/listings/zip-code";
 import { updateListingAction } from "./[id]/editar/actions";
 import { createListingAction } from "./novo/actions";
 
-// Todos os campi do seed são em Teresina: já vem preenchido, mas dá para mudar
+// Cidade e estado começam vazios e vêm do CEP (ViaCEP). Antes vinham como
+// Teresina/PI, e um endereço de Timon (MA) acabava procurado em Teresina.
 export const EMPTY_LISTING: ListingInput = {
   title: "",
   description: "",
@@ -53,8 +55,19 @@ export const EMPTY_LISTING: ListingInput = {
   number: "",
   complement: "",
   neighborhood: "",
-  city: "Teresina",
-  state: "PI",
+  city: "",
+  state: "",
+};
+
+type ZipCodeStatus = "idle" | "loading" | "found" | "not-found" | "failed";
+
+const ZIP_CODE_HINTS: Record<ZipCodeStatus, string> = {
+  idle: "Preenchemos rua, bairro e cidade pelo CEP.",
+  loading: "Buscando o endereço do CEP...",
+  found: "Endereço preenchido pelo CEP. Confira e informe o número.",
+  "not-found":
+    "CEP não encontrado nos Correios. Confira ou preencha o endereço.",
+  failed: "Não foi possível buscar o CEP agora. Preencha o endereço.",
 };
 
 type Published = {
@@ -79,13 +92,56 @@ export function ListingForm(
     handleSubmit,
     setError,
     getValues,
+    setValue,
+    setFocus,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isSubmitted },
   } = useForm<ListingInput, unknown, ListingData>({
     resolver: zodResolver(listingSchema),
     defaultValues: props.mode === "edit" ? props.defaultValues : EMPTY_LISTING,
   });
   const zipCodeField = register("zipCode");
+  const [zipCodeStatus, setZipCodeStatus] = useState<ZipCodeStatus>("idle");
+  // Último CEP consultado: ignora respostas atrasadas de um CEP anterior
+  const lastZipCode = useRef<string | null>(null);
+
+  /** Consulta o CEP completo no ViaCEP e preenche o endereço. */
+  async function fillAddressFromZipCode(masked: string) {
+    const zipCode = normalizeZipCode(masked);
+    if (!zipCode) {
+      lastZipCode.current = null;
+      setZipCodeStatus("idle");
+      return;
+    }
+    if (zipCode === lastZipCode.current) return;
+    lastZipCode.current = zipCode;
+
+    setZipCodeStatus("loading");
+    let address: Awaited<ReturnType<typeof lookupZipCode>>;
+    try {
+      address = await lookupZipCode(zipCode);
+    } catch {
+      if (lastZipCode.current === zipCode) setZipCodeStatus("failed");
+      return;
+    }
+    if (lastZipCode.current !== zipCode) return;
+    if (!address) {
+      setZipCodeStatus("not-found");
+      return;
+    }
+
+    // Depois de uma tentativa de envio, revalida para limpar os erros
+    const options = { shouldValidate: isSubmitted, shouldDirty: true };
+    setValue("city", address.city, options);
+    setValue("state", address.state, options);
+    // CEP geral de cidade vem sem rua/bairro: mantém o que foi digitado
+    if (address.street) setValue("street", address.street, options);
+    if (address.neighborhood) {
+      setValue("neighborhood", address.neighborhood, options);
+    }
+    setZipCodeStatus("found");
+    if (address.street) setFocus("number");
+  }
 
   async function onSubmit() {
     // Manda o que foi digitado: o servidor valida de novo e geocodifica
@@ -172,6 +228,8 @@ export function ListingForm(
             variant="ghost"
             onClick={() => {
               reset(EMPTY_LISTING);
+              lastZipCode.current = null;
+              setZipCodeStatus("idle");
               setPublished(null);
             }}
           >
@@ -275,7 +333,12 @@ export function ListingForm(
           </p>
           <FieldGroup>
             <div className="grid gap-4 sm:grid-cols-3">
-              <FormField id="zipCode" label="CEP" error={errors.zipCode}>
+              <FormField
+                id="zipCode"
+                label="CEP"
+                description={ZIP_CODE_HINTS[zipCodeStatus]}
+                error={errors.zipCode}
+              >
                 <Input
                   id="zipCode"
                   inputMode="numeric"
@@ -285,6 +348,7 @@ export function ListingForm(
                   {...zipCodeField}
                   onChange={(event) => {
                     event.target.value = maskZipCodeInput(event.target.value);
+                    void fillAddressFromZipCode(event.target.value);
                     return zipCodeField.onChange(event);
                   }}
                 />
@@ -357,6 +421,9 @@ export function ListingForm(
                   aria-invalid={!!errors.state}
                   {...register("state")}
                 >
+                  <NativeSelectOption value="" disabled>
+                    Escolha
+                  </NativeSelectOption>
                   {STATE_CODES.map((code) => (
                     <NativeSelectOption key={code} value={code}>
                       {BRAZILIAN_STATES[code]}

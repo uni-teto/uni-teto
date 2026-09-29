@@ -57,6 +57,17 @@ papéis (#40):
       endereço, mapa, distância até o campus (`?campus=` ou os da universidade
       do estudante) e contato. Pausado só o dono vê; os outros recebem 404
 
+### Melhorias da Fase 4
+
+- [x] Endereço preenchido pelo CEP (ViaCEP) e checagem de CEP × estado no
+      servidor. Motivo: um endereço de Timon (MA) foi salvo como Teresina (PI),
+      que vinha pré-preenchida, e caiu num bairro homônimo de Teresina
+- [ ] Limpar os dados dos testes E2E do banco (`globalTeardown`)
+- [ ] Guardar a precisão da localização e mostrar "aproximada" no anúncio
+- [ ] Limite de envios de anúncio por usuário (protege a fila do Nominatim)
+- [ ] Prévia do link (Open Graph), preço/contato no topo no celular,
+      `AlertDialog` ao excluir, limpeza de fotos órfãs no Cloudinary
+
 ## Fase 5 — Busca
 
 - [ ] #41 Consulta de busca com PostGIS e testes de integração — **o
