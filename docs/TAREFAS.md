@@ -47,8 +47,8 @@ papéis (#40):
       busca (#28) e anunciante para "Meus anúncios" (#42)
 - [x] #24 Criar anúncio (`/anuncios/novo`). Depois de publicar mostra um
       resumo; quando existirem, levar ao anúncio (#27) ou a "Meus anúncios" (#42)
-- [x] #25 Fotos do anúncio (`/anuncios/<id>/fotos`). Testado com Cloudinary
-      falso nos E2E; **falta testar com a conta real** (preencher `CLOUDINARY_*`)
+- [x] #25 Fotos do anúncio (`/anuncios/<id>/fotos`). E2E com Cloudinary falso
+      e testado com a conta real (envio, capa, remoção e foto de perfil)
 - [ ] #42 Página "Meus anúncios"
 - [ ] #26 Editar, pausar/reativar e excluir o próprio anúncio
 - [ ] #27 Página de detalhes do anúncio (pública)
