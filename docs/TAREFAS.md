@@ -73,6 +73,10 @@ papéis (#40):
       (sair do resumo depois de publicar ou "Concluir" na página de fotos)
       pede confirmação avisando que passa menos confiança (decisão de
       29/09/2026)
+- [x] Páginas de erro em português (`error.tsx`, `global-error.tsx`) e
+      esqueleto de carregamento em Meus anúncios
+- [x] LGPD: "Excluir minha conta" no perfil (com senha; apaga anúncios,
+      fotos no Cloudinary e sessões) e política de privacidade (`/privacidade`)
 - Fora do MVP (decisão de 29/09/2026): pedir ao dono, de tempos em tempos,
   que confirme que a vaga continua disponível
 

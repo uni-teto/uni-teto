@@ -93,6 +93,9 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24,
   },
   user: {
+    // "Excluir minha conta" (src/lib/account/delete-account.ts), chamado só
+    // pelo servidor, que exige a senha. A rota HTTP fica desligada abaixo.
+    deleteUser: { enabled: true },
     additionalFields: {
       // Escolhido no cadastro (ESTUDANTE ou ANUNCIANTE). O Better Auth também
       // aceitaria na rota de atualizar usuário: o hook `update.before` barra.
@@ -157,5 +160,8 @@ export const auth = betterAuth({
     },
   },
   // Permite que Server Actions definam os cookies de sessão
+  // Sem senha, /delete-user aceitaria excluir quem entrou há menos de 1 dia.
+  // `auth.api.deleteUser` (chamado pelo servidor) continua funcionando.
+  disabledPaths: ["/delete-user", "/delete-user/callback"],
   plugins: [nextCookies()],
 });

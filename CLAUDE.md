@@ -146,6 +146,14 @@ sozinho.
   rápida pelo cookie, manda para `/login?next=...`) **e** conferir
   `getSession()` na página. Caminhos e `safeRedirectPath` em
   `src/lib/auth/routes.ts` (nunca redirecionar para `next` sem validar).
+- Excluir conta (LGPD): Server Action `deleteMyAccount` (perfil) com
+  `deleteAccount` de `src/lib/account/delete-account.ts`: senha obrigatória,
+  limite de tentativas, apaga as imagens no Cloudinary depois. A rota HTTP
+  `/api/auth/delete-user` fica em `disabledPaths` (sem senha ela aceitaria
+  sessão recente). Anúncios, fotos e sessões saem em cascata no banco.
+- Política de privacidade em `/privacidade` (`PRIVACY_PATH`): descreve o que
+  o sistema faz de fato. Ao guardar um dado novo, mudar quem vê algo ou usar
+  outro serviço externo, atualize a página.
 - Respostas de auth não revelam se um e-mail existe (cadastro repetido e
   "esqueci minha senha" mostram a mesma mensagem; o aviso vai por e-mail).
 - Feedback de ações (salvou, enviou, saiu): toast do `sonner`

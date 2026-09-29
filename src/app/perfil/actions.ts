@@ -1,11 +1,20 @@
 "use server";
 
+import { APIError } from "better-auth/api";
 import { refresh } from "next/cache";
+import { headers } from "next/headers";
 import { z } from "zod";
+import {
+  deleteAccount,
+  deleteAccountAttempts,
+  type DeleteAccountResult,
+} from "@/lib/account/delete-account";
+import { auth } from "@/lib/auth/server";
 import { getSession } from "@/lib/auth/session";
 import { isOwnAvatarUrl } from "@/lib/cloudinary/avatar-url";
 import {
   deleteAvatarImage,
+  deleteImage,
   getCloudinaryConfig,
   signAvatarUpload,
 } from "@/lib/cloudinary/sign-upload";
@@ -72,4 +81,50 @@ export async function removeAvatar(): Promise<ActionResult> {
   });
   refresh();
   return { ok: true };
+}
+
+/**
+ * Exclui a conta do usuário logado, com os anúncios e as fotos (LGPD).
+ * A senha é conferida pelo Better Auth; a sessão acaba junto.
+ */
+export async function deleteMyAccount(
+  input: unknown,
+): Promise<DeleteAccountResult> {
+  const userId = await requireUserId();
+  const requestHeaders = await headers();
+
+  return deleteAccount(userId, input, {
+    findImageUrls: async (id) => {
+      const [photos, user] = await Promise.all([
+        prisma.listingPhoto.findMany({
+          where: { listing: { ownerId: id } },
+          select: { url: true },
+        }),
+        prisma.user.findUnique({ where: { id }, select: { image: true } }),
+      ]);
+      return [
+        ...photos.map((p) => p.url),
+        ...(user?.image ? [user.image] : []),
+      ];
+    },
+    deleteUser: async (password) => {
+      try {
+        await auth.api.deleteUser({
+          body: { password },
+          headers: requestHeaders,
+        });
+        return true;
+      } catch (error) {
+        if (
+          error instanceof APIError &&
+          error.body?.code === "INVALID_PASSWORD"
+        ) {
+          return false;
+        }
+        throw error;
+      }
+    },
+    deleteImage,
+    attempts: deleteAccountAttempts,
+  });
 }

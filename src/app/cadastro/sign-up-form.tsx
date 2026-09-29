@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HomeIcon, SearchIcon } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { FormField } from "@/components/form-field";
@@ -12,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth/client";
 import type { UserRole } from "@/lib/auth/roles";
-import { EMAIL_VERIFIED_PATH } from "@/lib/auth/routes";
+import { EMAIL_VERIFIED_PATH, PRIVACY_PATH } from "@/lib/auth/routes";
 import { signUpSchema, type SignUpInput } from "@/lib/auth/sign-up-schema";
 import { ResendVerification } from "./resend-verification";
 
@@ -189,6 +190,13 @@ export function SignUpForm({ defaultRole }: { defaultRole?: UserRole }) {
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Criando conta..." : "Criar conta"}
         </Button>
+        <p className="text-center text-xs text-muted-foreground">
+          Veja o que fazemos com seus dados na{" "}
+          <Link href={PRIVACY_PATH} className="underline">
+            política de privacidade
+          </Link>
+          .
+        </p>
       </FieldGroup>
     </form>
   );
