@@ -70,9 +70,18 @@ test("dono edita, pausa, reativa e exclui o anúncio", async ({ page }) => {
   await edited.getByRole("button", { name: "Reativar" }).click();
   await expect(edited).toContainText("Ativo");
 
-  // Excluir (pede confirmação)
-  page.once("dialog", (dialog) => dialog.accept());
+  // Excluir pede confirmação: cancelar não apaga
   await edited.getByRole("button", { name: "Excluir" }).click();
+  const confirm = page.getByRole("alertdialog", {
+    name: "Excluir este anúncio?",
+  });
+  await expect(confirm).toContainText("Quarto amplo perto da UFPI");
+  await confirm.getByRole("button", { name: "Cancelar" }).click();
+  await expect(confirm).toBeHidden();
+  await expect(edited).toBeVisible();
+
+  await edited.getByRole("button", { name: "Excluir" }).click();
+  await confirm.getByRole("button", { name: "Excluir anúncio" }).click();
   await expect(page.getByText("Você ainda não tem anúncios")).toBeVisible();
 });
 

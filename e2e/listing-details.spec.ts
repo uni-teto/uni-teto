@@ -48,6 +48,19 @@ test("visitante vê o anúncio e o mapa, mas não o contato", async ({
     visitor.getByText(/Rua Desembargador Pires de Castro, 1100/),
   ).toBeVisible();
   await expect(visitor.locator(".leaflet-container")).toBeVisible();
+  // O Nominatim não tem o número: a página avisa que o ponto é aproximado
+  await expect(
+    visitor.getByText(/^Localização aproximada: o ponto está na rua/),
+  ).toBeVisible();
+
+  // Prévia do link ao compartilhar
+  await expect(visitor.locator('meta[property="og:title"]')).toHaveAttribute(
+    "content",
+    TITLE,
+  );
+  await expect(
+    visitor.locator('meta[property="og:description"]'),
+  ).toHaveAttribute("content", /R\$\s750,00\/mês em Centro, Teresina - PI/);
 
   // Contato: nem o e-mail nem o telefone chegam ao HTML
   await expect(

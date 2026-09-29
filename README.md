@@ -86,6 +86,10 @@ npm run test:e2e
 Se algum falhar, o relatório abre com `npx playwright show-report`. No CI eles
 rodam no job `e2e`, com Postgres e Mailpit como serviços.
 
+No fim, os testes apagam as contas que criaram (e-mails `e2e-...`), junto com
+os anúncios, para eles não aparecerem na busca. Se uma rodada for
+interrompida no meio, `npm run db:clean-e2e` faz a limpeza.
+
 ### Fotos (Cloudinary)
 
 O envio de fotos usa o [Cloudinary](https://cloudinary.com) (plano gratuito).
@@ -98,6 +102,13 @@ CLOUDINARY_CLOUD_NAME="..."
 CLOUDINARY_API_KEY="..."
 CLOUDINARY_API_SECRET="..."
 ```
+
+Fotos enviadas e não salvas (página fechada no meio) ficam sobrando no
+Cloudinary. `npm run cloudinary:cleanup` lista as que nenhum anúncio ou perfil
+usa (com mais de 24 h) e `npm run cloudinary:cleanup -- --apply` apaga.
+**Rode só com o banco dono dessa conta do Cloudinary**: se duas pessoas usam
+as mesmas chaves com bancos locais diferentes, as fotos de uma parecem
+sobrando para a outra.
 
 ### Windows: quebras de linha
 
@@ -118,22 +129,24 @@ achar que todos os arquivos foram apagados (se acontecer, `git reset` resolve).
 
 ## Scripts
 
-| Comando                    | O que faz                                                                             |
-| -------------------------- | ------------------------------------------------------------------------------------- |
-| `npm run dev`              | Servidor de desenvolvimento                                                           |
-| `npm run build`            | Build de produção                                                                     |
-| `npm run lint`             | ESLint                                                                                |
-| `npm run format`           | Formata o código com o Prettier                                                       |
-| `npm run format:check`     | Verifica a formatação (roda no CI)                                                    |
-| `npm run typecheck`        | Checagem de tipos do TypeScript                                                       |
-| `npm run test`             | Testes unitários (Vitest)                                                             |
-| `npm run test:watch`       | Vitest em modo watch                                                                  |
-| `npm run test:integration` | Testes de integração com o banco (PostGIS); precisa do `docker compose up -d`         |
-| `npm run test:e2e`         | Testes ponta a ponta (Playwright). Na primeira vez: `npx playwright install chromium` |
-| `npm run db:migrate`       | Cria/aplica migrations e regenera o Prisma Client                                     |
-| `npm run db:seed`          | Cadastra universidades e campi iniciais (`src/lib/seed/`)                             |
-| `npm run db:generate`      | Regenera o Prisma Client                                                              |
-| `npm run db:studio`        | Abre o Prisma Studio para ver os dados                                                |
+| Comando                      | O que faz                                                                             |
+| ---------------------------- | ------------------------------------------------------------------------------------- |
+| `npm run dev`                | Servidor de desenvolvimento                                                           |
+| `npm run build`              | Build de produção                                                                     |
+| `npm run lint`               | ESLint                                                                                |
+| `npm run format`             | Formata o código com o Prettier                                                       |
+| `npm run format:check`       | Verifica a formatação (roda no CI)                                                    |
+| `npm run typecheck`          | Checagem de tipos do TypeScript                                                       |
+| `npm run test`               | Testes unitários (Vitest)                                                             |
+| `npm run test:watch`         | Vitest em modo watch                                                                  |
+| `npm run test:integration`   | Testes de integração com o banco (PostGIS); precisa do `docker compose up -d`         |
+| `npm run test:e2e`           | Testes ponta a ponta (Playwright). Na primeira vez: `npx playwright install chromium` |
+| `npm run db:migrate`         | Cria/aplica migrations e regenera o Prisma Client                                     |
+| `npm run db:seed`            | Cadastra universidades e campi iniciais (`src/lib/seed/`)                             |
+| `npm run db:clean-e2e`       | Apaga as contas e anúncios criados pelos testes E2E (já roda no fim do `test:e2e`)    |
+| `npm run cloudinary:cleanup` | Lista as fotos do Cloudinary sem uso; com `-- --apply`, apaga                         |
+| `npm run db:generate`        | Regenera o Prisma Client                                                              |
+| `npm run db:studio`          | Abre o Prisma Studio para ver os dados                                                |
 
 ## Estrutura
 

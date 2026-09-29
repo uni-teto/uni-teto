@@ -40,6 +40,7 @@ type Dependencies = {
       ownerId: string;
       latitude: number;
       longitude: number;
+      locationPrecision: GeocodePrecision;
     },
   ) => Promise<{ id: string }>;
 };
@@ -114,6 +115,7 @@ export async function createListing(
     ownerId,
     latitude: location.latitude,
     longitude: location.longitude,
+    locationPrecision: location.precision,
   });
 
   return {

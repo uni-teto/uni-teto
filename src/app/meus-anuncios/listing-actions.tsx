@@ -2,6 +2,15 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { deleteListing, setListingPaused } from "./actions";
 
@@ -16,6 +25,7 @@ export function ListingActions({
   paused: boolean;
 }) {
   const [busy, setBusy] = useState<"status" | "delete" | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   async function togglePaused() {
     setBusy("status");
@@ -35,16 +45,12 @@ export function ListingActions({
   }
 
   async function remove() {
-    const confirmed = window.confirm(
-      `Excluir o anúncio "${title}"? As fotos também serão apagadas. Não dá para desfazer.`,
-    );
-    if (!confirmed) return;
-
     setBusy("delete");
     const result = await deleteListing(listingId).catch(() => ({
       ok: false as const,
     }));
     setBusy(null);
+    setConfirming(false);
     if (result.ok) toast.success("Anúncio excluído.");
     else toast.error("Não foi possível excluir o anúncio. Tente de novo.");
   }
@@ -66,10 +72,38 @@ export function ListingActions({
         size="sm"
         className="text-destructive hover:text-destructive"
         disabled={busy !== null}
-        onClick={remove}
+        onClick={() => setConfirming(true)}
       >
-        {busy === "delete" ? "Excluindo..." : "Excluir"}
+        Excluir
       </Button>
+      <AlertDialog
+        open={confirming}
+        // Não fecha no meio da exclusão
+        onOpenChange={(open) => busy !== "delete" && setConfirming(open)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir este anúncio?</AlertDialogTitle>
+            <AlertDialogDescription>
+              &ldquo;{title}&rdquo; e as fotos dele serão apagados. Não dá para
+              desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy === "delete"}>
+              Cancelar
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={busy === "delete"}
+              onClick={remove}
+            >
+              {busy === "delete" ? "Excluindo..." : "Excluir anúncio"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

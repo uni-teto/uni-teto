@@ -1,5 +1,7 @@
 "use server";
 
+import { getSession } from "@/lib/auth/session";
+import { listingSubmitBlocked } from "@/lib/listings/limits";
 import type { ListingInput } from "@/lib/listings/listing-schema";
 import { requireOwnedListing } from "@/lib/listings/ownership";
 import {
@@ -14,5 +16,10 @@ export async function updateListingAction(
   input: ListingInput,
 ): Promise<UpdateListingResult> {
   const id = await requireOwnedListing(listingId);
+  const session = await getSession();
+  if (!session) throw new Error("Não autorizado");
+  const blocked = listingSubmitBlocked(session.user.id);
+  if (blocked) return { ok: false, message: blocked };
+
   return updateListing(id, input);
 }

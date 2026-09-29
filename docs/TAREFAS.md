@@ -62,11 +62,15 @@ papéis (#40):
 - [x] Endereço preenchido pelo CEP (ViaCEP) e checagem de CEP × estado no
       servidor. Motivo: um endereço de Timon (MA) foi salvo como Teresina (PI),
       que vinha pré-preenchida, e caiu num bairro homônimo de Teresina
-- [ ] Limpar os dados dos testes E2E do banco (`globalTeardown`)
-- [ ] Guardar a precisão da localização e mostrar "aproximada" no anúncio
-- [ ] Limite de envios de anúncio por usuário (protege a fila do Nominatim)
-- [ ] Prévia do link (Open Graph), preço/contato no topo no celular,
-      `AlertDialog` ao excluir, limpeza de fotos órfãs no Cloudinary
+- [x] Os E2E apagam as contas e anúncios que criaram (`npm run db:clean-e2e`)
+- [x] Precisão da localização guardada (`locationPrecision`); a página do
+      anúncio avisa e o mapa mostra uma área quando é aproximada
+- [x] Limite de 20 anúncios por conta e de 10 envios a cada 10 minutos
+      (protege a fila do Nominatim)
+- [x] Prévia do link (Open Graph), preço/contato antes do mapa no celular,
+      confirmação com `AlertDialog` ao excluir e `npm run cloudinary:cleanup`
+- [ ] A decidir: anúncio desatualizado (pedir confirmação a cada 30 dias?) e
+      anúncio sem fotos na busca
 
 ## Fase 5 — Busca
 

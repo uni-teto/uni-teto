@@ -93,6 +93,14 @@ sozinho.
   geocodifica de novo se o endereço mudou (`addressChanged`). Caminhos das
   páginas em `src/lib/auth/routes.ts` (`editListingPath`, `listingPhotosPath`,
   `MY_LISTINGS_PATH`).
+- Precisão da localização guardada em `Listing.locationPrecision` (mesmos
+  valores de `geocodeAddress`). A página do anúncio avisa quando é aproximada
+  (`publicLocationNotice`) e o mapa desenha uma área
+  (`APPROXIMATE_RADIUS_METERS`) em vez do ponto.
+- Limites de anúncio em `src/lib/listings/limits.ts`: até
+  `MAX_LISTINGS_PER_USER` por conta e `listingSubmitBlocked` (envios por
+  pessoa em 10 min, em memória via `src/lib/rate-limit.ts`), checados nas
+  Server Actions de criar e editar. Protegem a fila do Nominatim.
 - Página pública do anúncio: `src/app/anuncios/[id]/page.tsx` (`listingPath`).
   Pausado só aparece para o dono (outros: 404). Contato: `contactBlockFor` e
   `listingContact` de `src/lib/listings/contact.ts`; sem permissão, o e-mail e
@@ -141,6 +149,11 @@ sozinho.
   O Playwright sobe um Nominatim falso (`e2e/support/nominatim-mock.mjs`);
   com um `npm run dev` já aberto ele é reaproveitado e usa o Nominatim real,
   então os endereços dos testes funcionam nos dois.
+- Os E2E apagam as contas que criaram no fim (`e2e/global-teardown.ts` →
+  `npm run db:clean-e2e`, só e-mails no padrão `E2E_EMAIL` de
+  `e2e/support/e2e-email.ts`). Crie contas de teste sempre com `uniqueEmail`.
+- Fotos sem uso no Cloudinary: `npm run cloudinary:cleanup` (só lista; apaga
+  com `-- --apply`). Só rodar com o banco dono daquela conta do Cloudinary.
 - Testes de integração com o banco (ex: consultas PostGIS): `*.int.test.ts`,
   rodam com `npm run test:integration` (fora do `npm run test`; no CI, no job
   `e2e`). Criam dados com prefixo único e apagam no `afterAll`.

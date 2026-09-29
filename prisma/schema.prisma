@@ -127,36 +127,46 @@ enum ListingType {
   QUITINETE
 }
 
+// Precisão do ponto do anúncio no mapa, a mesma de `geocodeAddress`
+// (src/lib/geo/geocode.ts): número exato, ponto da rua ou centro do bairro
+enum LocationPrecision {
+  numero
+  rua
+  bairro
+}
+
 enum ListingStatus {
   ATIVO
   PAUSADO
 }
 
 model Listing {
-  id             String         @id @default(cuid())
-  title          String
-  description    String
-  type           ListingType
-  status         ListingStatus  @default(ATIVO)
+  id                String            @id @default(cuid())
+  title             String
+  description       String
+  type              ListingType
+  status            ListingStatus     @default(ATIVO)
   // Preço mensal em centavos, para evitar erros de ponto flutuante
-  priceCents     Int
+  priceCents        Int
   // Vagas disponíveis (ex: 2 vagas no mesmo quarto de república)
-  availableSpots Int            @default(1)
-  street         String
-  number         String
-  complement     String?
-  neighborhood   String
-  city           String
-  state          String         @db.Char(2)
-  zipCode        String         @db.Char(8)
+  availableSpots    Int               @default(1)
+  street            String
+  number            String
+  complement        String?
+  neighborhood      String
+  city              String
+  state             String            @db.Char(2)
+  zipCode           String            @db.Char(8)
   // Preenchidas pela geocodificação (Nominatim) ao salvar o anúncio
-  latitude       Float
-  longitude      Float
-  ownerId        String
-  owner          User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  photos         ListingPhoto[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  latitude          Float
+  longitude         Float
+  // "rua" e "bairro" são aproximados: o anúncio avisa quem está vendo
+  locationPrecision LocationPrecision
+  ownerId           String
+  owner             User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  photos            ListingPhoto[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   @@index([ownerId])
   @@index([status, type, priceCents])

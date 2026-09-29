@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { latLngBounds } from "leaflet";
 import { useEffect } from "react";
 import {
+  Circle,
   CircleMarker,
   MapContainer,
   TileLayer,
@@ -27,10 +28,15 @@ export default function ListingMap({
   listing,
   campuses,
 }: {
-  listing: MapPoint & { title: string };
+  listing: MapPoint & {
+    title: string;
+    /** Raio em metros quando o ponto é aproximado (0 = ponto exato) */
+    approximateRadius: number;
+  };
   campuses: CampusPoint[];
 }) {
   const center: [number, number] = [listing.latitude, listing.longitude];
+  const approximate = listing.approximateRadius > 0;
 
   return (
     <MapContainer
@@ -40,6 +46,8 @@ export default function ListingMap({
       className="z-0 size-full"
     >
       <FitPoints
+        // Centro do bairro: afasta para o círculo caber
+        zoom={listing.approximateRadius > 300 ? 14 : 16}
         points={[
           center,
           ...campuses.map((c) => [c.latitude, c.longitude] as [number, number]),
@@ -59,35 +67,54 @@ export default function ListingMap({
           <Tooltip>{campus.name}</Tooltip>
         </CircleMarker>
       ))}
-      <CircleMarker
-        center={center}
-        radius={10}
-        pathOptions={{ color: LISTING_COLOR, fillOpacity: 0.8 }}
-      >
-        <Tooltip permanent direction="top" offset={[0, -8]}>
-          {listing.title}
-        </Tooltip>
-      </CircleMarker>
+      {approximate ? (
+        // Aproximado: uma área em vez de um ponto, para não parecer exato
+        <Circle
+          center={center}
+          radius={listing.approximateRadius}
+          pathOptions={{ color: LISTING_COLOR, fillOpacity: 0.15 }}
+        >
+          <Tooltip permanent direction="top">
+            {listing.title} (localização aproximada)
+          </Tooltip>
+        </Circle>
+      ) : (
+        <CircleMarker
+          center={center}
+          radius={10}
+          pathOptions={{ color: LISTING_COLOR, fillOpacity: 0.8 }}
+        >
+          <Tooltip permanent direction="top" offset={[0, -8]}>
+            {listing.title}
+          </Tooltip>
+        </CircleMarker>
+      )}
     </MapContainer>
   );
 }
 
 /**
- * Enquadra todos os pontos (anúncio e campi). Com um ponto só, fica no zoom
- * inicial. Roda de novo quando a lista de pontos muda (outro campus).
+ * Enquadra todos os pontos (anúncio e campi). Com um ponto só, usa o
+ * `zoom` informado. Roda de novo quando a lista de pontos muda (outro campus).
  */
-function FitPoints({ points }: { points: [number, number][] }) {
+function FitPoints({
+  points,
+  zoom,
+}: {
+  points: [number, number][];
+  zoom: number;
+}) {
   const map = useMap();
   const key = JSON.stringify(points);
 
   useEffect(() => {
     const latLngs: [number, number][] = JSON.parse(key);
     if (latLngs.length < 2) {
-      map.setView(latLngs[0], 16);
+      map.setView(latLngs[0], zoom);
       return;
     }
     map.fitBounds(latLngBounds(latLngs), { padding: [32, 32], maxZoom: 16 });
-  }, [map, key]);
+  }, [map, key, zoom]);
 
   return null;
 }

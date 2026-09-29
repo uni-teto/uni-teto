@@ -5,6 +5,8 @@ const NOMINATIM_MOCK_PORT = 8089;
 
 export default defineConfig({
   testDir: "./e2e",
+  // Apaga as contas (e os anúncios) criadas pelos testes
+  globalTeardown: "./e2e/global-teardown.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

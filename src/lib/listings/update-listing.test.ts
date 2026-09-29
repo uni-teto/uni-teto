@@ -107,7 +107,7 @@ describe("updateListing", () => {
     expect(deps.saveListing).toHaveBeenCalledWith(
       "anuncio-1",
       expect.objectContaining({ street: "Rua Olavo Bilac" }),
-      { latitude: -5.06, longitude: -42.79 },
+      { latitude: -5.06, longitude: -42.79, locationPrecision: "rua" },
     );
   });
 

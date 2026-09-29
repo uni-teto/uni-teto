@@ -54,7 +54,11 @@ export type UpdateListingResult =
     }
   | ListingFailure;
 
-type Coordinates = { latitude: number; longitude: number };
+type Location = {
+  latitude: number;
+  longitude: number;
+  locationPrecision: GeocodePrecision;
+};
 
 type Dependencies = {
   geocode: (
@@ -64,7 +68,7 @@ type Dependencies = {
   saveListing: (
     listingId: string,
     data: ListingData,
-    coordinates: Coordinates | null,
+    location: Location | null,
   ) => Promise<void>;
 };
 
@@ -82,10 +86,10 @@ const defaultDependencies: Dependencies = {
         zipCode: true,
       },
     }) as Promise<ListingAddress | null>,
-  saveListing: async (listingId, { price, ...data }, coordinates) => {
+  saveListing: async (listingId, { price, ...data }, location) => {
     await prisma.listing.update({
       where: { id: listingId },
-      data: { ...data, priceCents: price, ...coordinates },
+      data: { ...data, priceCents: price, ...location },
     });
   },
 };
@@ -119,6 +123,10 @@ export async function updateListing(
   if (!located.ok) return located;
   const { latitude, longitude, precision, displayName } = located.location;
 
-  await deps.saveListing(listingId, data, { latitude, longitude });
+  await deps.saveListing(listingId, data, {
+    latitude,
+    longitude,
+    locationPrecision: precision,
+  });
   return { ok: true, relocated: true, precision, displayName };
 }

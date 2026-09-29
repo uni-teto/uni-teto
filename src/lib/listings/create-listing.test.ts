@@ -65,6 +65,7 @@ describe("createListing", () => {
         availableSpots: 2,
         latitude: -5.06,
         longitude: -42.8,
+        locationPrecision: "rua",
       }),
     );
   });

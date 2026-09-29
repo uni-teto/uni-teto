@@ -4,6 +4,7 @@ import {
   MapPinIcon,
   MessageCircleIcon,
   SchoolIcon,
+  TriangleAlertIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -19,6 +20,7 @@ import {
   signInUrl,
 } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
+import { listingPhotoThumbnailUrl } from "@/lib/cloudinary/listing-photo-url";
 import { getCampusDistancesToListing } from "@/lib/geo/campus-distance";
 import { formatDistance } from "@/lib/geo/distance";
 import { chooseCampusIds } from "@/lib/listings/campus-choice";
@@ -29,6 +31,10 @@ import {
   listingContact,
 } from "@/lib/listings/contact";
 import { LISTING_TYPE_LABELS } from "@/lib/listings/listing-types";
+import {
+  APPROXIMATE_RADIUS_METERS,
+  publicLocationNotice,
+} from "@/lib/listings/location-notice";
 import { formatPrice } from "@/lib/listings/price";
 import { maskZipCodeInput } from "@/lib/listings/zip-code";
 import { prisma } from "@/lib/prisma";
@@ -59,6 +65,7 @@ const getListing = cache(async (id: string) =>
       zipCode: true,
       latitude: true,
       longitude: true,
+      locationPrecision: true,
       ownerId: true,
       createdAt: true,
       photos: {
@@ -84,10 +91,31 @@ export async function generateMetadata({
 }: PageProps<"/anuncios/[id]">): Promise<Metadata> {
   const { id } = await params;
   const visible = await getVisibleListing(id);
+  if (!visible) return { title: "Anúncio não encontrado | UniTeto" };
+
+  // Prévia do link ao compartilhar (WhatsApp, redes): capa, preço e bairro
+  const { listing } = visible;
+  const description = `${LISTING_TYPE_LABELS[listing.type]} por ${formatPrice(listing.priceCents)}/mês em ${listing.neighborhood}, ${listing.city} - ${listing.state}.`;
+  const cover = listing.photos[0]?.url;
   return {
-    title: visible
-      ? `${visible.listing.title} | UniTeto`
-      : "Anúncio não encontrado | UniTeto",
+    title: `${listing.title} | UniTeto`,
+    description,
+    openGraph: {
+      title: listing.title,
+      description,
+      url: listingPath(listing.id),
+      images: cover
+        ? [
+            {
+              url: listingPhotoThumbnailUrl(cover, 1200, 630),
+              width: 1200,
+              height: 630,
+            },
+          ]
+        : undefined,
+    },
+    // Pausado só o dono vê: não deve ir para buscadores
+    robots: listing.status === "PAUSADO" ? { index: false } : undefined,
   };
 }
 
@@ -138,6 +166,7 @@ export default async function ListingPage({
   }));
   const campusLabel = (c: (typeof campuses)[number]) =>
     `${c.university.acronym} · ${c.name}`;
+  const locationWarning = publicLocationNotice(listing.locationPrecision);
 
   // Contato decidido aqui, no servidor: sem permissão, o e-mail e o WhatsApp
   // nem saem do banco (e não chegam ao HTML)
@@ -196,8 +225,10 @@ export default async function ListingPage({
         </div>
       )}
 
+      {/* No celular: fotos e descrição, depois preço/distância/contato, depois
+          o mapa. No computador, preço/distância/contato ficam na lateral. */}
       <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
-        <div className="min-w-0 space-y-8">
+        <div className="min-w-0 space-y-8 lg:col-start-1">
           <PhotoGallery
             urls={listing.photos.map((p) => p.url)}
             title={listing.title}
@@ -217,34 +248,48 @@ export default async function ListingPage({
               Publicado em {dateFormat.format(listing.createdAt)}
             </p>
           </section>
-
-          <section aria-labelledby="localizacao" className="space-y-3">
-            <h2 id="localizacao" className="text-lg font-semibold">
-              Localização
-            </h2>
-            <p className="flex gap-2 text-sm">
-              <MapPinIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
-              <span>{address}</span>
-            </p>
-            <div className="h-80 overflow-hidden rounded-xl border">
-              <LazyListingMap
-                listing={{
-                  title: listing.title,
-                  latitude: listing.latitude,
-                  longitude: listing.longitude,
-                }}
-                campuses={distances.map(({ campus }) => ({
-                  id: campus.id,
-                  name: campusLabel(campus),
-                  latitude: campus.latitude,
-                  longitude: campus.longitude,
-                }))}
-              />
-            </div>
-          </section>
         </div>
 
-        <aside className="space-y-4">
+        <section
+          aria-labelledby="localizacao"
+          className="min-w-0 space-y-3 lg:col-start-1"
+        >
+          <h2 id="localizacao" className="text-lg font-semibold">
+            Localização
+          </h2>
+          <p className="flex gap-2 text-sm">
+            <MapPinIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <span>{address}</span>
+          </p>
+          {locationWarning && (
+            <p className="flex gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+              <TriangleAlertIcon
+                className="mt-0.5 size-4 shrink-0 text-amber-600"
+                aria-hidden
+              />
+              <span>{locationWarning}</span>
+            </p>
+          )}
+          <div className="h-80 overflow-hidden rounded-xl border">
+            <LazyListingMap
+              listing={{
+                title: listing.title,
+                latitude: listing.latitude,
+                longitude: listing.longitude,
+                approximateRadius:
+                  APPROXIMATE_RADIUS_METERS[listing.locationPrecision],
+              }}
+              campuses={distances.map(({ campus }) => ({
+                id: campus.id,
+                name: campusLabel(campus),
+                latitude: campus.latitude,
+                longitude: campus.longitude,
+              }))}
+            />
+          </div>
+        </section>
+
+        <aside className="space-y-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
           <div className="space-y-2 rounded-xl border p-4">
             <p className="text-2xl font-semibold">
               {formatPrice(listing.priceCents)}
@@ -285,18 +330,22 @@ export default async function ListingPage({
               }
             />
             {distances.length > 0 ? (
-              <ul className="space-y-1 text-sm">
-                {distances.map(({ campus, distanceMeters }) => (
-                  <li key={campus.id} className="flex justify-between gap-2">
-                    <span className="text-muted-foreground">
-                      {campusLabel(campus)}
-                    </span>
-                    <span className="shrink-0 font-medium">
-                      {formatDistance(distanceMeters)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul className="space-y-1 text-sm">
+                  {distances.map(({ campus, distanceMeters }) => (
+                    <li key={campus.id} className="flex justify-between gap-2">
+                      <span className="text-muted-foreground">
+                        {campusLabel(campus)}
+                      </span>
+                      <span className="shrink-0 font-medium">
+                        {locationWarning && "cerca de "}
+                        {formatDistance(distanceMeters)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-muted-foreground">Em linha reta.</p>
+              </>
             ) : (
               <p className="text-sm text-muted-foreground">
                 Escolha um campus para ver a distância em linha reta.

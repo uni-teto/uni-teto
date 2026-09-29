@@ -1,4 +1,4 @@
-import { HouseIcon, PlusIcon } from "lucide-react";
+import { HouseIcon, PlusIcon, TriangleAlertIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -43,6 +43,7 @@ export default async function MyListingsPage() {
       availableSpots: true,
       status: true,
       neighborhood: true,
+      locationPrecision: true,
       createdAt: true,
       photos: {
         orderBy: [{ position: "asc" }, { createdAt: "asc" }],
@@ -134,6 +135,15 @@ export default async function MyListingsPage() {
                     {listing._count.photos}{" "}
                     {listing._count.photos === 1 ? "foto" : "fotos"}
                   </p>
+                  {/* "rua" é o comum em Teresina (o OSM quase não tem os
+                      números); só o centro do bairro merece o alerta */}
+                  {listing.locationPrecision === "bairro" && (
+                    <p className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+                      <TriangleAlertIcon className="size-3.5" aria-hidden />
+                      Localização aproximada (centro do bairro). Confira o
+                      endereço em Editar.
+                    </p>
+                  )}
 
                   <div className="mt-auto flex flex-wrap gap-2 pt-2">
                     <Link

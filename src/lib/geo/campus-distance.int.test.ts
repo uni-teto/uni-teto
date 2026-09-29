@@ -73,6 +73,7 @@ beforeAll(async () => {
       state: "PI",
       zipCode: "64000000",
       ...point,
+      locationPrecision: "numero" as const,
       ownerId,
     })),
   });
