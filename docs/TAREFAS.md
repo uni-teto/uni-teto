@@ -45,8 +45,8 @@ papéis (#40):
 - [x] #40 Escolha de papel no cadastro (estudante ou anunciante). Falta só
       levar cada papel à sua página quando elas existirem: estudante para a
       busca (#28) e anunciante para "Meus anúncios" (#42)
-- [ ] #24 Criar anúncio (inclui o campo "número de vagas", que ainda não existe
-      no banco, e o aviso de localização aproximada)
+- [x] #24 Criar anúncio (`/anuncios/novo`). Depois de publicar mostra um
+      resumo; quando existirem, levar ao anúncio (#27) ou a "Meus anúncios" (#42)
 - [ ] #25 Fotos do anúncio (reaproveitar `src/lib/cloudinary/`)
 - [ ] #42 Página "Meus anúncios"
 - [ ] #26 Editar, pausar/reativar e excluir o próprio anúncio

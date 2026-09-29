@@ -69,7 +69,11 @@ sozinho.
   `"rua"` (número não encontrado) ou `"bairro"` (centro do bairro); avise o
   usuário nos dois últimos. Não há plano B por CEP: o Nominatim devolve o
   centro da cidade para CEPs de Teresina. UFs em `src/lib/geo/states.ts`.
-- Preços em centavos (`priceCents`).
+- Preços em centavos (`priceCents`); na tela, reais ("650,00") com
+  `parsePriceToCents`/`formatPrice` de `src/lib/listings/price.ts`.
+- Anúncios: regras em `src/lib/listings/` (schema Zod compartilhado entre
+  formulário e Server Action, `createListing` valida, geocodifica e salva).
+  Sem coordenadas o anúncio não é salvo. CEP guardado só com dígitos.
 - WhatsApp guardado só com dígitos e DDI (`5586999998888`):
   `normalizeWhatsapp`/`formatWhatsapp` em `src/lib/profile/whatsapp.ts`.
 - Fotos: `src/lib/cloudinary/`. O servidor assina o upload fixando o
@@ -102,10 +106,14 @@ sozinho.
 - Feedback de ações (salvou, enviou, saiu): toast do `sonner`
   (`import { toast } from "sonner"`); erros de campo ficam no formulário.
 - Depois de mudar o schema, `npm run db:migrate` (já roda o `prisma generate`;
-  no Prisma 7 o `migrate dev` sozinho não regenera o client).
+  no Prisma 7 o `migrate dev` sozinho não regenera o client) e **reinicie o
+  `npm run dev`**: ele guarda o client antigo na memória ("Unknown argument").
 - Componentes de UI: `npx shadcn@latest add <nome>` (vão para `src/components/ui`).
 - Testes unitários ao lado do código (`*.test.ts`); E2E em `e2e/` (precisam do
   banco com seed e do Mailpit; links dos e-mails via `e2e/support/mailpit.ts`).
+  O Playwright sobe um Nominatim falso (`e2e/support/nominatim-mock.mjs`);
+  com um `npm run dev` já aberto ele é reaproveitado e usa o Nominatim real,
+  então os endereços dos testes funcionam nos dois.
 - Testes de integração com o banco (ex: consultas PostGIS): `*.int.test.ts`,
   rodam com `npm run test:integration` (fora do `npm run test`; no CI, no job
   `e2e`). Criam dados com prefixo único e apagam no `afterAll`.

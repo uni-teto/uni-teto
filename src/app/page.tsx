@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { NEW_LISTING_PATH } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
@@ -71,9 +72,26 @@ export default async function Home() {
             {hero.text}
           </p>
           {session ? (
-            <Link href="/perfil" className={buttonVariants({ size: "lg" })}>
-              Completar meu perfil
-            </Link>
+            <div className="flex flex-wrap justify-center gap-3">
+              {session.user.role === "ANUNCIANTE" && (
+                <Link
+                  href={NEW_LISTING_PATH}
+                  className={buttonVariants({ size: "lg" })}
+                >
+                  Criar anúncio
+                </Link>
+              )}
+              <Link
+                href="/perfil"
+                className={buttonVariants({
+                  size: "lg",
+                  variant:
+                    session.user.role === "ANUNCIANTE" ? "outline" : "default",
+                })}
+              >
+                Completar meu perfil
+              </Link>
+            </div>
           ) : (
             <div className="flex flex-col items-center gap-3">
               <div className="flex flex-wrap justify-center gap-3">

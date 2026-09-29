@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HomeIcon, SearchIcon } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { FormField } from "@/components/form-field";
 import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
@@ -53,13 +53,14 @@ export function SignUpForm({ defaultRole }: { defaultRole?: UserRole }) {
     register,
     handleSubmit,
     setError,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
     defaultValues: { role: defaultRole },
   });
-  const role = watch("role");
+  // useWatch (e não watch()) para funcionar com o React Compiler
+  const role = useWatch({ control, name: "role" });
   const emailField = EMAIL_FIELD[role ?? "ESTUDANTE"];
 
   async function onSubmit(input: SignUpInput) {

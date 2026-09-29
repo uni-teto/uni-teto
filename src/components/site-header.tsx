@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { NEW_LISTING_PATH } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { UserMenu } from "./user-menu";
 
@@ -15,11 +16,20 @@ export async function SiteHeader() {
 
         <nav className="flex items-center gap-2 text-sm">
           {session ? (
-            <UserMenu
-              name={session.user.name}
-              email={session.user.email}
-              image={session.user.image}
-            />
+            <>
+              {/* Estudante e anunciante podem anunciar */}
+              <Link
+                href={NEW_LISTING_PATH}
+                className={buttonVariants({ variant: "outline", size: "sm" })}
+              >
+                Anunciar
+              </Link>
+              <UserMenu
+                name={session.user.name}
+                email={session.user.email}
+                image={session.user.image}
+              />
+            </>
           ) : (
             <>
               <Link

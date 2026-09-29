@@ -21,5 +21,5 @@ export function proxy(request: NextRequest) {
 // Páginas que exigem login. Ao criar novas (ex: criar/editar anúncio),
 // acrescente aqui. O matcher precisa ser uma lista fixa (lida no build).
 export const config = {
-  matcher: ["/perfil/:path*"],
+  matcher: ["/perfil/:path*", "/anuncios/novo"],
 };

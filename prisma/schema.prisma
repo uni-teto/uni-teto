@@ -133,28 +133,30 @@ enum ListingStatus {
 }
 
 model Listing {
-  id           String         @id @default(cuid())
-  title        String
-  description  String
-  type         ListingType
-  status       ListingStatus  @default(ATIVO)
+  id             String         @id @default(cuid())
+  title          String
+  description    String
+  type           ListingType
+  status         ListingStatus  @default(ATIVO)
   // Preço mensal em centavos, para evitar erros de ponto flutuante
-  priceCents   Int
-  street       String
-  number       String
-  complement   String?
-  neighborhood String
-  city         String
-  state        String         @db.Char(2)
-  zipCode      String         @db.Char(8)
+  priceCents     Int
+  // Vagas disponíveis (ex: 2 vagas no mesmo quarto de república)
+  availableSpots Int            @default(1)
+  street         String
+  number         String
+  complement     String?
+  neighborhood   String
+  city           String
+  state          String         @db.Char(2)
+  zipCode        String         @db.Char(8)
   // Preenchidas pela geocodificação (Nominatim) ao salvar o anúncio
-  latitude     Float
-  longitude    Float
-  ownerId      String
-  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  photos       ListingPhoto[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  latitude       Float
+  longitude      Float
+  ownerId        String
+  owner          User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  photos         ListingPhoto[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@index([ownerId])
   @@index([status, type, priceCents])
