@@ -25,6 +25,17 @@ export function roleOption(page: Page, role: Role) {
   return page.getByRole("radio", { name });
 }
 
+/**
+ * Escolhe o papel clicando no cartão, como uma pessoa faria. O botão de opção
+ * fica escondido visualmente dentro do cartão, então clicar direto nele não
+ * funciona (o cartão está por cima).
+ */
+export async function chooseRole(page: Page, role: Role) {
+  const option = roleOption(page, role);
+  await page.locator("label").filter({ has: option }).click();
+  await expect(option).toBeChecked();
+}
+
 export async function fillSignUpForm(
   page: Page,
   name: string,
@@ -32,7 +43,7 @@ export async function fillSignUpForm(
   role: Role = "ESTUDANTE",
 ) {
   await page.goto("/cadastro");
-  await roleOption(page, role).check();
+  await chooseRole(page, role);
   await page.getByLabel("Nome").fill(name);
   // O rótulo do e-mail muda conforme o papel escolhido
   await page
