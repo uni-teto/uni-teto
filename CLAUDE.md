@@ -83,6 +83,11 @@ sozinho.
   `uniteto/listings/<id>/`, até `MAX_LISTING_PHOTOS`, com `position` 0 = capa.
   Sem as variáveis `CLOUDINARY_*` o upload fica desativado e o resto funciona.
   Nos E2E o envio é interceptado no navegador (`e2e/support/cloudinary.ts`).
+- Formulário do anúncio compartilhado entre criar e editar
+  (`src/app/anuncios/listing-form.tsx`); editar usa `updateListing`, que só
+  geocodifica de novo se o endereço mudou (`addressChanged`). Caminhos das
+  páginas em `src/lib/auth/routes.ts` (`editListingPath`, `listingPhotosPath`,
+  `MY_LISTINGS_PATH`).
 - Ações sobre um anúncio (fotos, editar, pausar, excluir): começar com
   `requireOwnedListing(id)` de `src/lib/listings/ownership.ts`; páginas do dono
   usam `findFirst({ where: { id, ownerId } })` e `notFound()` para os outros.
@@ -114,6 +119,8 @@ sozinho.
 - Depois de mudar o schema, `npm run db:migrate` (já roda o `prisma generate`;
   no Prisma 7 o `migrate dev` sozinho não regenera o client) e **reinicie o
   `npm run dev`**: ele guarda o client antigo na memória ("Unknown argument").
+  Se o `next dev` reclamar de um arquivo que foi movido ("Can't resolve"),
+  apague o cache `.next/dev` e suba de novo.
 - Componentes de UI: `npx shadcn@latest add <nome>` (vão para `src/components/ui`).
 - Testes unitários ao lado do código (`*.test.ts`); E2E em `e2e/` (precisam do
   banco com seed e do Mailpit; links dos e-mails via `e2e/support/mailpit.ts`).

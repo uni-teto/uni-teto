@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { NEW_LISTING_PATH, signInUrl } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
-import { ListingForm } from "./listing-form";
+import { ListingForm } from "../listing-form";
 
 export const metadata: Metadata = {
   title: "Criar anúncio | UniTeto",
@@ -34,7 +34,7 @@ export default async function NewListingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ListingForm />
+          <ListingForm mode="create" />
         </CardContent>
       </Card>
     </main>

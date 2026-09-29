@@ -10,11 +10,14 @@ import { Button } from "@/components/ui/button";
 import { FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth/client";
-import { FORGOT_PASSWORD_PATH } from "@/lib/auth/routes";
+import { FORGOT_PASSWORD_PATH, homeForRole } from "@/lib/auth/routes";
 import { signInSchema, type SignInInput } from "@/lib/auth/sign-in-schema";
 
-/** `next`: para onde voltar após o login (já validado pela página). */
-export function SignInForm({ next }: { next: string }) {
+/**
+ * `next`: para onde voltar após o login (já validado pela página). Sem ele,
+ * cada papel vai para a sua página inicial (`homeForRole`).
+ */
+export function SignInForm({ next }: { next: string | null }) {
   const router = useRouter();
   const {
     register,
@@ -27,7 +30,7 @@ export function SignInForm({ next }: { next: string }) {
     const { email, password } = signInSchema.parse(input);
     // Sem `callbackURL`: com ele o Better Auth redirecionaria o navegador
     // sozinho após o login. O link reenviado (e-mail não confirmado) leva à home.
-    const { error } = await authClient.signIn.email({ email, password });
+    const { data, error } = await authClient.signIn.email({ email, password });
 
     if (error) {
       setError("root", { message: signInErrorMessage(error.code) });
@@ -35,7 +38,7 @@ export function SignInForm({ next }: { next: string }) {
     }
 
     // `refresh` faz o cabeçalho (Server Component) ler a sessão nova
-    router.push(next);
+    router.push(next ?? homeForRole(data.user.role));
     router.refresh();
   }
 

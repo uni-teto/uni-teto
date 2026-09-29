@@ -42,15 +42,17 @@ papéis (#40):
 
 ## Fase 4 — Anúncios
 
-- [x] #40 Escolha de papel no cadastro (estudante ou anunciante). Falta só
-      levar cada papel à sua página quando elas existirem: estudante para a
-      busca (#28) e anunciante para "Meus anúncios" (#42)
+- [x] #40 Escolha de papel no cadastro (estudante ou anunciante). O
+      anunciante já entra em "Meus anúncios"; falta levar o estudante para a
+      busca quando ela existir (#28, `homeForRole` em `src/lib/auth/routes.ts`)
 - [x] #24 Criar anúncio (`/anuncios/novo`). Depois de publicar mostra um
-      resumo; quando existirem, levar ao anúncio (#27) ou a "Meus anúncios" (#42)
+      resumo com "Adicionar fotos" e "Ver meus anúncios"
 - [x] #25 Fotos do anúncio (`/anuncios/<id>/fotos`). E2E com Cloudinary falso
       e testado com a conta real (envio, capa, remoção e foto de perfil)
-- [ ] #42 Página "Meus anúncios"
-- [ ] #26 Editar, pausar/reativar e excluir o próprio anúncio
+- [x] #42 Página "Meus anúncios" (`/meus-anuncios`). Falta o botão "Ver" o
+      anúncio, que depende da página de detalhes (#27)
+- [x] #26 Editar (`/anuncios/<id>/editar`), pausar/reativar e excluir o
+      próprio anúncio
 - [ ] #27 Página de detalhes do anúncio (pública)
 
 ## Fase 5 — Busca

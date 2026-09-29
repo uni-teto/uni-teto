@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, LogOutIcon, UserIcon } from "lucide-react";
+import { ChevronDownIcon, HouseIcon, LogOutIcon, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth/client";
+import { MY_LISTINGS_PATH } from "@/lib/auth/routes";
 import { firstName } from "@/lib/profile/name";
 import { UserAvatar } from "./user-avatar";
 
@@ -63,6 +64,10 @@ export function UserMenu({
         <DropdownMenuItem onClick={() => router.push("/perfil")}>
           <UserIcon />
           Meu perfil
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push(MY_LISTINGS_PATH)}>
+          <HouseIcon />
+          Meus anúncios
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={signOut}>

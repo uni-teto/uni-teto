@@ -9,7 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { listingPhotosPath, signInUrl } from "@/lib/auth/routes";
+import {
+  listingPhotosPath,
+  MY_LISTINGS_PATH,
+  signInUrl,
+} from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { MAX_LISTING_PHOTOS } from "@/lib/cloudinary/listing-photo-url";
 import { getCloudinaryConfig } from "@/lib/cloudinary/sign-upload";
@@ -60,7 +64,10 @@ export default async function ListingPhotosPage({
             photos={listing.photos}
             enabled={getCloudinaryConfig() !== null}
           />
-          <Link href="/" className={buttonVariants({ variant: "outline" })}>
+          <Link
+            href={MY_LISTINGS_PATH}
+            className={buttonVariants({ variant: "outline" })}
+          >
             Concluir
           </Link>
         </CardContent>

@@ -22,5 +22,11 @@ export function proxy(request: NextRequest) {
 // acrescente aqui. O matcher precisa ser uma lista fixa (lida no build).
 export const config = {
   // (o detalhe do anúncio, /anuncios/<id>, é público: só as páginas do dono)
-  matcher: ["/perfil/:path*", "/anuncios/novo", "/anuncios/:id/fotos"],
+  matcher: [
+    "/perfil/:path*",
+    "/meus-anuncios",
+    "/anuncios/novo",
+    "/anuncios/:id/fotos",
+    "/anuncios/:id/editar",
+  ],
 };

@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MapPinIcon, TriangleAlertIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -30,13 +31,14 @@ import {
   LISTING_TYPE_LABELS,
   LISTING_TYPES,
 } from "@/lib/listings/listing-types";
-import { listingPhotosPath } from "@/lib/auth/routes";
+import { listingPhotosPath, MY_LISTINGS_PATH } from "@/lib/auth/routes";
 import { locationNotice } from "@/lib/listings/location-notice";
 import { maskZipCodeInput } from "@/lib/listings/zip-code";
-import { createListingAction } from "./actions";
+import { updateListingAction } from "./[id]/editar/actions";
+import { createListingAction } from "./novo/actions";
 
 // Todos os campi do seed são em Teresina: já vem preenchido, mas dá para mudar
-const DEFAULT_VALUES: ListingInput = {
+export const EMPTY_LISTING: ListingInput = {
   title: "",
   description: "",
   type: "" as ListingInput["type"],
@@ -57,7 +59,16 @@ type Published = {
   displayName: string;
 };
 
-export function ListingForm() {
+/**
+ * Formulário do anúncio: criar (`/anuncios/novo`) ou editar
+ * (`/anuncios/<id>/editar`). O servidor valida de novo e geocodifica.
+ */
+export function ListingForm(
+  props:
+    | { mode: "create" }
+    | { mode: "edit"; listingId: string; defaultValues: ListingInput },
+) {
+  const router = useRouter();
   const [published, setPublished] = useState<Published | null>(null);
   const {
     register,
@@ -68,25 +79,41 @@ export function ListingForm() {
     formState: { errors, isSubmitting },
   } = useForm<ListingInput, unknown, ListingData>({
     resolver: zodResolver(listingSchema),
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: props.mode === "edit" ? props.defaultValues : EMPTY_LISTING,
   });
   const zipCodeField = register("zipCode");
 
   async function onSubmit() {
     // Manda o que foi digitado: o servidor valida de novo e geocodifica
-    let result: Awaited<ReturnType<typeof createListingAction>>;
+    const values = getValues();
+    let result:
+      | Awaited<ReturnType<typeof createListingAction>>
+      | Awaited<ReturnType<typeof updateListingAction>>;
     try {
-      result = await createListingAction(getValues());
+      result =
+        props.mode === "edit"
+          ? await updateListingAction(props.listingId, values)
+          : await createListingAction(values);
     } catch {
       // Erro inesperado no servidor: sem isso o formulário pararia calado
       setError("root", {
-        message: "Não foi possível publicar o anúncio. Tente novamente.",
+        message: "Não foi possível salvar o anúncio. Tente novamente.",
       });
       return;
     }
-    if (result.ok) {
+
+    if (result.ok && "listingId" in result) {
       setPublished(result);
       toast.success("Anúncio publicado.");
+      return;
+    }
+    if (result.ok) {
+      toast.success("Alterações salvas.");
+      // Mudou o endereço e a nova localização é aproximada: avisa
+      const notice = result.relocated ? locationNotice(result.precision) : null;
+      if (notice) toast.warning(notice, { duration: 10_000 });
+      router.push(MY_LISTINGS_PATH);
+      router.refresh();
       return;
     }
 
@@ -124,19 +151,22 @@ export function ListingForm() {
           >
             Adicionar fotos
           </Link>
+          <Link
+            href={MY_LISTINGS_PATH}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Ver meus anúncios
+          </Link>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             onClick={() => {
-              reset(DEFAULT_VALUES);
+              reset(EMPTY_LISTING);
               setPublished(null);
             }}
           >
             Criar outro anúncio
           </Button>
-          <Link href="/" className={buttonVariants({ variant: "outline" })}>
-            Ir para o início
-          </Link>
         </div>
       </div>
     );
@@ -330,11 +360,25 @@ export function ListingForm() {
 
         <FieldError errors={[errors.root]} />
 
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? "Localizando endereço e publicando..."
-            : "Publicar anúncio"}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit" disabled={isSubmitting}>
+            {props.mode === "edit"
+              ? isSubmitting
+                ? "Salvando..."
+                : "Salvar alterações"
+              : isSubmitting
+                ? "Localizando endereço e publicando..."
+                : "Publicar anúncio"}
+          </Button>
+          {props.mode === "edit" && (
+            <Link
+              href={MY_LISTINGS_PATH}
+              className={buttonVariants({ variant: "outline" })}
+            >
+              Cancelar
+            </Link>
+          )}
+        </div>
       </FieldGroup>
     </form>
   );
