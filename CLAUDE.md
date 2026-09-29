@@ -97,6 +97,9 @@ sozinho.
   valores de `geocodeAddress`). A página do anúncio avisa quando é aproximada
   (`publicLocationNotice`) e o mapa desenha uma área
   (`APPROXIMATE_RADIUS_METERS`) em vez do ponto.
+- Anúncio sem fotos aparece na busca; ao terminar sem fotos, o aviso
+  `NoPhotosConfirm` (`src/app/anuncios/no-photos-confirm.tsx`) pergunta se
+  quer continuar (menos confiança). As fotos só entram depois de publicar.
 - Limites de anúncio em `src/lib/listings/limits.ts`: até
   `MAX_LISTINGS_PER_USER` por conta e `listingSubmitBlocked` (envios por
   pessoa em 10 min, em memória via `src/lib/rate-limit.ts`), checados nas

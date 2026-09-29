@@ -43,3 +43,19 @@ export async function publishListing(page: Page) {
     "Seu anúncio foi publicado!",
   );
 }
+
+/**
+ * No resumo depois de publicar (sem fotos), clica numa saída e confirma o
+ * aviso "Continuar sem fotos?".
+ */
+export async function leaveSummaryWithoutPhotos(
+  page: Page,
+  button: "Ver anúncio" | "Ver meus anúncios" | "Criar outro anúncio",
+) {
+  await page.getByRole("button", { name: button }).click();
+  const confirm = page.getByRole("alertdialog", {
+    name: "Continuar sem fotos?",
+  });
+  await expect(confirm).toContainText("menos confiança");
+  await confirm.getByRole("button", { name: "Continuar sem fotos" }).click();
+}

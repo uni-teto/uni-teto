@@ -40,6 +40,7 @@ import { locationNotice } from "@/lib/listings/location-notice";
 import { lookupZipCode } from "@/lib/listings/via-cep";
 import { maskZipCodeInput, normalizeZipCode } from "@/lib/listings/zip-code";
 import { updateListingAction } from "./[id]/editar/actions";
+import { NoPhotosConfirm } from "./no-photos-confirm";
 import { createListingAction } from "./novo/actions";
 
 // Cidade e estado começam vazios e vêm do CEP (ViaCEP). Antes vinham como
@@ -87,6 +88,8 @@ export function ListingForm(
 ) {
   const router = useRouter();
   const [published, setPublished] = useState<Published | null>(null);
+  // Saída escolhida no resumo, esperando o aviso de "sem fotos"
+  const [leaving, setLeaving] = useState<(() => void) | null>(null);
   const {
     register,
     handleSubmit,
@@ -211,31 +214,54 @@ export function ListingForm(
           >
             Adicionar fotos
           </Link>
-          <Link
-            href={listingPath(published.listingId)}
-            className={buttonVariants({ variant: "outline" })}
+          {/* Recém-publicado ainda não tem fotos: as outras saídas passam
+              pelo aviso de "sem fotos" */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              setLeaving(
+                () => () => router.push(listingPath(published.listingId)),
+              )
+            }
           >
             Ver anúncio
-          </Link>
-          <Link
-            href={MY_LISTINGS_PATH}
-            className={buttonVariants({ variant: "outline" })}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              setLeaving(() => () => router.push(MY_LISTINGS_PATH))
+            }
           >
             Ver meus anúncios
-          </Link>
+          </Button>
           <Button
             type="button"
             variant="ghost"
-            onClick={() => {
-              reset(EMPTY_LISTING);
-              lastZipCode.current = null;
-              setZipCodeStatus("idle");
-              setPublished(null);
-            }}
+            onClick={() =>
+              setLeaving(() => () => {
+                reset(EMPTY_LISTING);
+                lastZipCode.current = null;
+                setZipCodeStatus("idle");
+                setPublished(null);
+              })
+            }
           >
             Criar outro anúncio
           </Button>
         </div>
+        <NoPhotosConfirm
+          open={leaving !== null}
+          onOpenChange={(open) => !open && setLeaving(null)}
+          onAddPhotos={() =>
+            router.push(listingPhotosPath(published.listingId))
+          }
+          onContinue={() => {
+            leaving?.();
+            setLeaving(null);
+          }}
+        />
       </div>
     );
   }

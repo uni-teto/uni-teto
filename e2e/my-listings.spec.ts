@@ -4,7 +4,7 @@ import {
   signIn,
   TEST_PASSWORD,
 } from "./support/accounts";
-import { publishListing } from "./support/listings";
+import { leaveSummaryWithoutPhotos, publishListing } from "./support/listings";
 
 // Meus anúncios (#42) e editar/pausar/excluir (#26).
 
@@ -31,7 +31,7 @@ test("anunciante entra e cai em Meus anúncios, vazio no começo", async ({
 test("dono edita, pausa, reativa e exclui o anúncio", async ({ page }) => {
   await createVerifiedAccount(page, "Dono Completo", "ANUNCIANTE");
   await publishListing(page);
-  await page.getByRole("link", { name: "Ver meus anúncios" }).click();
+  await leaveSummaryWithoutPhotos(page, "Ver meus anúncios");
   await expect(page).toHaveURL("/meus-anuncios");
 
   const item = page.getByRole("listitem", {

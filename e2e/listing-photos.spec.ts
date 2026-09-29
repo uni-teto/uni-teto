@@ -74,3 +74,29 @@ test("outra pessoa não acessa a página de fotos do anúncio", async ({
   ).toBeHidden();
   await otherContext.close();
 });
+
+test("terminar sem fotos pede confirmação, mas o anúncio continua no ar", async ({
+  page,
+}) => {
+  await createVerifiedAccount(page, "Dono Sem Fotos", "ANUNCIANTE");
+  await publishListing(page);
+
+  // No resumo, sair sem fotos abre o aviso; "Adicionar fotos" leva às fotos
+  await page.getByRole("button", { name: "Ver meus anúncios" }).click();
+  const confirm = page.getByRole("alertdialog", {
+    name: "Continuar sem fotos?",
+  });
+  await expect(confirm).toContainText(
+    "Anúncios sem fotos passam menos confiança",
+  );
+  await confirm.getByRole("button", { name: "Adicionar fotos" }).click();
+  await expect(page).toHaveURL(/\/anuncios\/[^/]+\/fotos$/);
+
+  // "Concluir" sem nenhuma foto pergunta de novo
+  await page.getByRole("button", { name: "Concluir" }).click();
+  await confirm.getByRole("button", { name: "Continuar sem fotos" }).click();
+  await expect(page).toHaveURL("/meus-anuncios");
+  await expect(
+    page.getByRole("listitem", { name: "Quarto mobiliado perto da UFPI" }),
+  ).toContainText("Ativo");
+});

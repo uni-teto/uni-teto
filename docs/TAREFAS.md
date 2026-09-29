@@ -69,8 +69,12 @@ papéis (#40):
       (protege a fila do Nominatim)
 - [x] Prévia do link (Open Graph), preço/contato antes do mapa no celular,
       confirmação com `AlertDialog` ao excluir e `npm run cloudinary:cleanup`
-- [ ] A decidir: anúncio desatualizado (pedir confirmação a cada 30 dias?) e
-      anúncio sem fotos na busca
+- [x] Anúncio sem fotos continua aparecendo na busca, mas terminar sem fotos
+      (sair do resumo depois de publicar ou "Concluir" na página de fotos)
+      pede confirmação avisando que passa menos confiança (decisão de
+      29/09/2026)
+- Fora do MVP (decisão de 29/09/2026): pedir ao dono, de tempos em tempos,
+  que confirme que a vaga continua disponível
 
 ## Fase 5 — Busca
 

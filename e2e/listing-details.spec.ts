@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import { createVerifiedAccount } from "./support/accounts";
-import { publishListing } from "./support/listings";
+import { leaveSummaryWithoutPhotos, publishListing } from "./support/listings";
 
 // Página de detalhes do anúncio (#27), com a regra de contato da #32.
 
@@ -23,7 +23,7 @@ async function publishWithWhatsapp(page: Page) {
   await expect(page.getByText("Alterações salvas.")).toBeVisible();
 
   await publishListing(page);
-  await page.getByRole("link", { name: "Ver anúncio" }).click();
+  await leaveSummaryWithoutPhotos(page, "Ver anúncio");
   await expect(page.getByRole("heading", { name: TITLE })).toBeVisible();
   return { path: new URL(page.url()).pathname, email: owner.email };
 }
