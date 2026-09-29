@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
-import { AVATAR_FORMATS, avatarPublicId } from "./avatar-url";
+import { avatarPublicId } from "./avatar-url";
+import { IMAGE_FORMATS } from "./image-url";
 
 // Credenciais em CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e
 // CLOUDINARY_API_SECRET (painel do Cloudinary → Settings → API Keys).
@@ -13,21 +14,26 @@ export function getCloudinaryConfig() {
   return { cloudName, apiKey, apiSecret };
 }
 
+export type SignedUpload = {
+  uploadUrl: string;
+  fields: Record<string, string | number | boolean>;
+};
+
 /**
- * Parâmetros para o navegador enviar a foto direto ao Cloudinary.
- * A assinatura fixa o `public_id` (pasta do usuário) e os formatos aceitos,
- * então o navegador não consegue gravar em outro lugar.
+ * Parâmetros para o navegador enviar uma imagem direto ao Cloudinary.
+ * A assinatura fixa o `public_id` e os formatos aceitos, então o navegador não
+ * consegue gravar em outro lugar. `null` sem as credenciais.
  */
-export function signAvatarUpload(userId: string) {
+export function signImageUpload(publicId: string): SignedUpload | null {
   const config = getCloudinaryConfig();
   if (!config) return null;
 
   const params = {
     timestamp: Math.round(Date.now() / 1000),
-    public_id: avatarPublicId(userId),
+    public_id: publicId,
     overwrite: true,
     invalidate: true,
-    allowed_formats: AVATAR_FORMATS.join(","),
+    allowed_formats: IMAGE_FORMATS.join(","),
   };
   const signature = cloudinary.utils.api_sign_request(params, config.apiSecret);
 
@@ -37,8 +43,8 @@ export function signAvatarUpload(userId: string) {
   };
 }
 
-/** Apaga a foto do usuário no Cloudinary (ao remover a foto do perfil). */
-export async function deleteAvatarImage(userId: string) {
+/** Apaga uma imagem no Cloudinary (não faz nada sem as credenciais). */
+export async function deleteImage(publicId: string) {
   const config = getCloudinaryConfig();
   if (!config) return;
 
@@ -48,7 +54,15 @@ export async function deleteAvatarImage(userId: string) {
     api_key: config.apiKey,
     api_secret: config.apiSecret,
   });
-  await cloudinary.uploader.destroy(avatarPublicId(userId), {
-    invalidate: true,
-  });
+  await cloudinary.uploader.destroy(publicId, { invalidate: true });
+}
+
+/** Assinatura para a foto de perfil (sempre o mesmo caminho por usuário). */
+export function signAvatarUpload(userId: string) {
+  return signImageUpload(avatarPublicId(userId));
+}
+
+/** Apaga a foto do usuário no Cloudinary (ao remover a foto do perfil). */
+export function deleteAvatarImage(userId: string) {
+  return deleteImage(avatarPublicId(userId));
 }

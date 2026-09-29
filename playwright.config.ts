@@ -31,7 +31,14 @@ export default defineConfig({
       url: `http://localhost:${PORT}`,
       // Se já houver um `npm run dev` aberto (local), ele é reaproveitado e usa
       // o Nominatim configurado nele; os testes funcionam com os dois
-      env: { NOMINATIM_URL: `http://localhost:${NOMINATIM_MOCK_PORT}` },
+      env: {
+        NOMINATIM_URL: `http://localhost:${NOMINATIM_MOCK_PORT}`,
+        // Credenciais falsas: só geram a assinatura; o envio ao Cloudinary é
+        // interceptado no navegador (e2e/support/cloudinary.ts)
+        CLOUDINARY_CLOUD_NAME: "uniteto-e2e",
+        CLOUDINARY_API_KEY: "e2e-api-key",
+        CLOUDINARY_API_SECRET: "e2e-api-secret-sem-uso-real",
+      },
       reuseExistingServer: !process.env.CI,
       // A primeira compilação do `next dev` pode demorar
       timeout: 120_000,

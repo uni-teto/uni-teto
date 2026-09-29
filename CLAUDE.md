@@ -77,9 +77,15 @@ sozinho.
 - WhatsApp guardado só com dígitos e DDI (`5586999998888`):
   `normalizeWhatsapp`/`formatWhatsapp` em `src/lib/profile/whatsapp.ts`.
 - Fotos: `src/lib/cloudinary/`. O servidor assina o upload fixando o
-  `public_id`; o navegador envia direto ao Cloudinary; ao salvar, confira a URL
-  (ex: `isOwnAvatarUrl`). Sem as variáveis `CLOUDINARY_*` o upload fica
-  desativado e o resto funciona.
+  `public_id` (`signImageUpload`); o navegador envia direto ao Cloudinary
+  (`uploadImage`, que valida formato e tamanho); ao salvar, confira a URL
+  (`isOwnAvatarUrl`, `isListingPhotoUrl`). Fotos de anúncio ficam em
+  `uniteto/listings/<id>/`, até `MAX_LISTING_PHOTOS`, com `position` 0 = capa.
+  Sem as variáveis `CLOUDINARY_*` o upload fica desativado e o resto funciona.
+  Nos E2E o envio é interceptado no navegador (`e2e/support/cloudinary.ts`).
+- Ações sobre um anúncio (fotos, editar, pausar, excluir): começar com
+  `requireOwnedListing(id)` de `src/lib/listings/ownership.ts`; páginas do dono
+  usam `findFirst({ where: { id, ownerId } })` e `notFound()` para os outros.
 - Server Actions: sempre conferir a sessão (`getSession()`) e validar com Zod
   dentro da action; podem ser chamadas direto por POST.
 - Seed: dados em `src/lib/seed/universities.ts` (com fonte de cada domínio e

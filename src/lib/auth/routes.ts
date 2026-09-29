@@ -12,6 +12,11 @@ export const FORGOT_PASSWORD_PATH = "/esqueci-senha";
 
 export const NEW_LISTING_PATH = "/anuncios/novo";
 
+/** Página onde o dono gerencia as fotos do anúncio. */
+export function listingPhotosPath(listingId: string) {
+  return `/anuncios/${encodeURIComponent(listingId)}/fotos`;
+}
+
 /**
  * Caminho interno seguro para voltar depois do login (`/login?next=...`).
  * Aceita só caminhos do próprio site: bloqueia URLs externas como

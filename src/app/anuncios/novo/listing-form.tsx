@@ -30,6 +30,7 @@ import {
   LISTING_TYPE_LABELS,
   LISTING_TYPES,
 } from "@/lib/listings/listing-types";
+import { listingPhotosPath } from "@/lib/auth/routes";
 import { locationNotice } from "@/lib/listings/location-notice";
 import { maskZipCodeInput } from "@/lib/listings/zip-code";
 import { createListingAction } from "./actions";
@@ -51,6 +52,7 @@ const DEFAULT_VALUES: ListingInput = {
 };
 
 type Published = {
+  listingId: string;
   precision: Parameters<typeof locationNotice>[0];
   displayName: string;
 };
@@ -116,8 +118,15 @@ export function ListingForm() {
           </p>
         )}
         <div className="flex flex-wrap gap-2">
+          <Link
+            href={listingPhotosPath(published.listingId)}
+            className={buttonVariants()}
+          >
+            Adicionar fotos
+          </Link>
           <Button
             type="button"
+            variant="outline"
             onClick={() => {
               reset(DEFAULT_VALUES);
               setPublished(null);

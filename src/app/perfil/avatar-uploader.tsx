@@ -4,13 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { UserAvatar } from "@/components/user-avatar";
 import { Button } from "@/components/ui/button";
-import { AVATAR_FORMATS } from "@/lib/cloudinary/avatar-url";
+import {
+  IMAGE_ACCEPT,
+  imageFileError,
+  uploadImage,
+} from "@/lib/cloudinary/upload-client";
 import { getAvatarUploadParams, removeAvatar, saveAvatar } from "./actions";
-
-const MAX_SIZE_MB = 5;
-const ACCEPT = AVATAR_FORMATS.map((format) =>
-  format === "jpg" ? "image/jpeg" : `image/${format}`,
-).join(",");
 
 /**
  * Foto do perfil com os botões de trocar e remover.
@@ -40,12 +39,9 @@ export function AvatarUploader({
   }, [preview]);
 
   async function upload(file: File) {
-    if (!ACCEPT.split(",").includes(file.type)) {
-      toast.error("Use uma imagem JPG, PNG ou WEBP.");
-      return;
-    }
-    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      toast.error(`A imagem pode ter no máximo ${MAX_SIZE_MB} MB.`);
+    const fileError = imageFileError(file);
+    if (fileError) {
+      toast.error(fileError);
       return;
     }
 
@@ -55,17 +51,8 @@ export function AvatarUploader({
       const params = await getAvatarUploadParams();
       if (!params) throw new Error("Cloudinary não configurado");
 
-      const body = new FormData();
-      body.append("file", file);
-      for (const [key, value] of Object.entries(params.fields)) {
-        body.append(key, String(value));
-      }
-
-      const response = await fetch(params.uploadUrl, { method: "POST", body });
-      if (!response.ok) throw new Error(`Cloudinary: ${response.status}`);
-      const { secure_url } = (await response.json()) as { secure_url: string };
-
-      const result = await saveAvatar(secure_url);
+      const secureUrl = await uploadImage(file, params);
+      const result = await saveAvatar(secureUrl);
       if (!result.ok) throw new Error(result.message);
       toast.success("Foto atualizada.");
     } catch {
@@ -98,7 +85,7 @@ export function AvatarUploader({
       <input
         ref={inputRef}
         type="file"
-        accept={ACCEPT}
+        accept={IMAGE_ACCEPT}
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0];
