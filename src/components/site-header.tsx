@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { NEW_LISTING_PATH } from "@/lib/auth/routes";
-import { getSession } from "@/lib/auth/session";
+import { getSessionOrNull } from "@/lib/auth/session";
 import { UserMenu } from "./user-menu";
 
 export async function SiteHeader() {
-  const session = await getSession();
+  // Banco fora do ar: cabeçalho de visitante em vez de derrubar o layout
+  const session = await getSessionOrNull();
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">

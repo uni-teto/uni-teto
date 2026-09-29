@@ -131,6 +131,15 @@ sozinho.
   da sessão (`session.user.role`), nunca por dado vindo do navegador.
 - Sessão no servidor: `getSession()` de `src/lib/auth/session.ts`; no navegador,
   `authClient.useSession()`. Após login/logout, `router.refresh()`.
+- Erros inesperados: `src/app/error.tsx` (dentro do layout) e
+  `global-error.tsx`, ambos com `ErrorState`. O cabeçalho usa
+  `getSessionOrNull()` para não derrubar o layout com o banco fora do ar.
+  Nunca envolver `headers()`/`cookies()`/`redirect()`/`notFound()` num
+  `try/catch` que engole o erro: o Next usa erros internos para saber que a
+  página é dinâmica (ou chame `headers()` fora do `try`, como em
+  `getSessionOrNull`). `loading.tsx` (esqueleto com `Skeleton`) só em páginas sem
+  `notFound()`: com ele a resposta começa a ser enviada como 200 e o 404 vira
+  200 (por isso as páginas de anúncio não têm).
 - Login exige e-mail confirmado (`requireEmailVerification`): sem isso não há
   sessão. E-mails em `src/lib/email/` (nodemailer; em dev caem no Mailpit).
 - Páginas que exigem login: acrescentar no `matcher` de `src/proxy.ts` (checagem
