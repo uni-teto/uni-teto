@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { safeRedirectPath, signInUrl } from "./routes";
+import {
+  editListingPath,
+  homeForRole,
+  listingPath,
+  listingPhotosPath,
+  safeRedirectPath,
+  signInUrl,
+} from "./routes";
 
 describe("safeRedirectPath", () => {
   it("mantém caminhos internos, com query", () => {
@@ -33,5 +40,20 @@ describe("signInUrl", () => {
 
   it("não acrescenta `next` para a home", () => {
     expect(signInUrl("/")).toBe("/login");
+  });
+});
+
+describe("homeForRole", () => {
+  it("leva o anunciante para Meus anúncios e o estudante para o início", () => {
+    expect(homeForRole("ANUNCIANTE")).toBe("/meus-anuncios");
+    expect(homeForRole("ESTUDANTE")).toBe("/");
+  });
+});
+
+describe("caminhos do anúncio", () => {
+  it("codifica o id na URL", () => {
+    expect(listingPath("abc")).toBe("/anuncios/abc");
+    expect(editListingPath("abc")).toBe("/anuncios/abc/editar");
+    expect(listingPhotosPath("a/b")).toBe("/anuncios/a%2Fb/fotos");
   });
 });

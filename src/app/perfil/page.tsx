@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   Card,
@@ -7,12 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { signInUrl } from "@/lib/auth/routes";
+import { ROLE_LABELS } from "@/lib/auth/roles";
+import { PRIVACY_PATH, signInUrl } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { getCloudinaryConfig } from "@/lib/cloudinary/sign-upload";
 import { prisma } from "@/lib/prisma";
 import { formatWhatsapp } from "@/lib/profile/whatsapp";
 import { AvatarUploader } from "./avatar-uploader";
+import { DeleteAccount } from "./delete-account";
 import { ProfileForm } from "./profile-form";
 
 export const metadata: Metadata = {
@@ -31,12 +34,14 @@ export default async function ProfilePage() {
       email: true,
       image: true,
       whatsapp: true,
+      role: true,
       university: { select: { name: true, acronym: true } },
+      _count: { select: { listings: true } },
     },
   });
 
   return (
-    <main className="flex flex-1 justify-center px-4 py-12">
+    <main className="flex flex-1 flex-col items-center gap-6 px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>
@@ -54,14 +59,20 @@ export default async function ProfilePage() {
           />
 
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt className="text-muted-foreground">Tipo de conta</dt>
+            <dd>{ROLE_LABELS[user.role]}</dd>
             <dt className="text-muted-foreground">E-mail</dt>
             <dd>{user.email}</dd>
-            <dt className="text-muted-foreground">Universidade</dt>
-            <dd>
-              {user.university
-                ? `${user.university.name} (${user.university.acronym})`
-                : "Não vinculada"}
-            </dd>
+            {user.role === "ESTUDANTE" && (
+              <>
+                <dt className="text-muted-foreground">Universidade</dt>
+                <dd>
+                  {user.university
+                    ? `${user.university.name} (${user.university.acronym})`
+                    : "Não vinculada"}
+                </dd>
+              </>
+            )}
           </dl>
 
           <ProfileForm
@@ -70,6 +81,24 @@ export default async function ProfilePage() {
               whatsapp: user.whatsapp ? formatWhatsapp(user.whatsapp) : "",
             }}
           />
+        </CardContent>
+      </Card>
+
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>
+            <h2>Excluir conta</h2>
+          </CardTitle>
+          <CardDescription>
+            Apaga sua conta, seus anúncios e as fotos. Veja o que guardamos na{" "}
+            <Link href={PRIVACY_PATH} className="font-medium underline">
+              política de privacidade
+            </Link>
+            .
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DeleteAccount listingCount={user._count.listings} />
         </CardContent>
       </Card>
     </main>

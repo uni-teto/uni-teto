@@ -45,15 +45,24 @@ model Campus {
   @@index([universityId])
 }
 
+// Estudante: e-mail institucional, vinculado à universidade, vê o contato dos
+// anúncios. Anunciante: qualquer e-mail, sem universidade. Os dois anunciam.
+enum UserRole {
+  ESTUDANTE
+  ANUNCIANTE
+}
+
 model User {
   id            String      @id @default(cuid())
   name          String
   email         String      @unique
   emailVerified Boolean     @default(false)
   image         String?
+  // Escolhido no cadastro e não muda depois (ver src/lib/auth/roles.ts)
+  role          UserRole    @default(ESTUDANTE)
   // Número usado no link de contato do WhatsApp (apenas dígitos, com DDI)
   whatsapp      String?
-  // Preenchido no cadastro a partir do domínio do e-mail institucional
+  // Preenchido no cadastro do estudante a partir do domínio do e-mail
   universityId  String?
   university    University? @relation(fields: [universityId], references: [id])
   listings      Listing[]
@@ -118,34 +127,46 @@ enum ListingType {
   QUITINETE
 }
 
+// Precisão do ponto do anúncio no mapa, a mesma de `geocodeAddress`
+// (src/lib/geo/geocode.ts): número exato, ponto da rua ou centro do bairro
+enum LocationPrecision {
+  numero
+  rua
+  bairro
+}
+
 enum ListingStatus {
   ATIVO
   PAUSADO
 }
 
 model Listing {
-  id           String         @id @default(cuid())
-  title        String
-  description  String
-  type         ListingType
-  status       ListingStatus  @default(ATIVO)
+  id                String            @id @default(cuid())
+  title             String
+  description       String
+  type              ListingType
+  status            ListingStatus     @default(ATIVO)
   // Preço mensal em centavos, para evitar erros de ponto flutuante
-  priceCents   Int
-  street       String
-  number       String
-  complement   String?
-  neighborhood String
-  city         String
-  state        String         @db.Char(2)
-  zipCode      String         @db.Char(8)
+  priceCents        Int
+  // Vagas disponíveis (ex: 2 vagas no mesmo quarto de república)
+  availableSpots    Int               @default(1)
+  street            String
+  number            String
+  complement        String?
+  neighborhood      String
+  city              String
+  state             String            @db.Char(2)
+  zipCode           String            @db.Char(8)
   // Preenchidas pela geocodificação (Nominatim) ao salvar o anúncio
-  latitude     Float
-  longitude    Float
-  ownerId      String
-  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  photos       ListingPhoto[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  latitude          Float
+  longitude         Float
+  // "rua" e "bairro" são aproximados: o anúncio avisa quem está vendo
+  locationPrecision LocationPrecision
+  ownerId           String
+  owner             User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  photos            ListingPhoto[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   @@index([ownerId])
   @@index([status, type, priceCents])

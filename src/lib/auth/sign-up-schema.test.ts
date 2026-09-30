@@ -3,6 +3,7 @@ import { z } from "zod";
 import { signUpSchema, type SignUpInput } from "./sign-up-schema";
 
 const valid: SignUpInput = {
+  role: "ESTUDANTE",
   name: "Maria Silva",
   email: "maria@ufpi.edu.br",
   password: "senha-segura",
@@ -17,6 +18,21 @@ function errorsOf(input: SignUpInput) {
 describe("signUpSchema", () => {
   it("aceita um cadastro válido", () => {
     expect(signUpSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it("aceita os dois papéis", () => {
+    expect(
+      signUpSchema.safeParse({ ...valid, role: "ANUNCIANTE" }).success,
+    ).toBe(true);
+  });
+
+  it("exige escolher o papel", () => {
+    const semPapel = { ...valid, role: undefined } as unknown as SignUpInput;
+    expect(errorsOf(semPapel).role).toEqual([
+      "Escolha se você quer procurar moradia ou anunciar um imóvel.",
+    ]);
+    const outro = { ...valid, role: "ADMIN" } as unknown as SignUpInput;
+    expect(errorsOf(outro).role).toHaveLength(1);
   });
 
   it("normaliza e-mail e nome", () => {

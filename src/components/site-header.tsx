@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { getSession } from "@/lib/auth/session";
+import { NEW_LISTING_PATH } from "@/lib/auth/routes";
+import { getSessionOrNull } from "@/lib/auth/session";
 import { UserMenu } from "./user-menu";
 
 export async function SiteHeader() {
-  const session = await getSession();
+  // Banco fora do ar: cabeçalho de visitante em vez de derrubar o layout
+  const session = await getSessionOrNull();
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
@@ -15,11 +17,20 @@ export async function SiteHeader() {
 
         <nav className="flex items-center gap-2 text-sm">
           {session ? (
-            <UserMenu
-              name={session.user.name}
-              email={session.user.email}
-              image={session.user.image}
-            />
+            <>
+              {/* Estudante e anunciante podem anunciar */}
+              <Link
+                href={NEW_LISTING_PATH}
+                className={buttonVariants({ variant: "outline", size: "sm" })}
+              >
+                Anunciar
+              </Link>
+              <UserMenu
+                name={session.user.name}
+                email={session.user.email}
+                image={session.user.image}
+              />
+            </>
           ) : (
             <>
               <Link

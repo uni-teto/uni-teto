@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { formatDistance, haversineDistanceMeters } from "./distance";
+import {
+  formatDistance,
+  haversineDistanceMeters,
+  metersToKm,
+} from "./distance";
 
 describe("haversineDistanceMeters", () => {
   it("retorna 0 para o mesmo ponto", () => {
@@ -23,6 +27,15 @@ describe("haversineDistanceMeters", () => {
     );
   });
 
+  it("não devolve NaN para pontos opostos no globo", () => {
+    const d = haversineDistanceMeters(
+      { latitude: 0, longitude: 0 },
+      { latitude: 0, longitude: 180 },
+    );
+    // Metade da circunferência da Terra (esfera de 6.371 km)
+    expect(d).toBeCloseTo(Math.PI * 6_371_000, 0);
+  });
+
   it("mede 1 grau de latitude como ~111 km", () => {
     const d = haversineDistanceMeters(
       { latitude: 0, longitude: 0 },
@@ -38,8 +51,26 @@ describe("formatDistance", () => {
     expect(formatDistance(849.6)).toBe("850 m");
   });
 
+  it('mostra "1 km" (e não "1000 m") logo abaixo de 1 km', () => {
+    expect(formatDistance(999.4)).toBe("999 m");
+    expect(formatDistance(999.6)).toBe("1 km");
+  });
+
   it("usa km com vírgula decimal a partir de 1 km", () => {
     expect(formatDistance(1234)).toBe("1,2 km");
     expect(formatDistance(3000)).toBe("3 km");
+  });
+});
+
+describe("metersToKm", () => {
+  it("converte com 1 casa decimal por padrão", () => {
+    expect(metersToKm(1234)).toBe(1.2);
+    expect(metersToKm(1250)).toBe(1.3);
+    expect(metersToKm(0)).toBe(0);
+  });
+
+  it("aceita outra quantidade de casas", () => {
+    expect(metersToKm(1234.5, 2)).toBe(1.23);
+    expect(metersToKm(1500, 0)).toBe(2);
   });
 });

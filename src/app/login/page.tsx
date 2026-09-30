@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { safeRedirectPath } from "@/lib/auth/routes";
+import { homeForRole, safeRedirectPath } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { SignInForm } from "./sign-in-form";
 
@@ -20,9 +20,12 @@ export const metadata: Metadata = {
 export default async function SignInPage({
   searchParams,
 }: PageProps<"/login">) {
-  // Página de onde a pessoa veio (ex: /perfil), validada contra open redirect
-  const next = safeRedirectPath((await searchParams).next);
-  if (await getSession()) redirect(next);
+  // Página de onde a pessoa veio (ex: /perfil), validada contra open redirect.
+  // Sem `next`, cada papel vai para a sua página inicial.
+  const requested = (await searchParams).next;
+  const next = requested ? safeRedirectPath(requested) : null;
+  const session = await getSession();
+  if (session) redirect(next ?? homeForRole(session.user.role));
 
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-12">
@@ -32,7 +35,7 @@ export default async function SignInPage({
             <h1>Entrar</h1>
           </CardTitle>
           <CardDescription>
-            Acesse sua conta com o e-mail institucional.
+            Acesse sua conta com o e-mail que você cadastrou.
           </CardDescription>
         </CardHeader>
         <CardContent>

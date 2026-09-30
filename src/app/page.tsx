@@ -6,14 +6,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { NEW_LISTING_PATH } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
 const steps = [
   {
     icon: ShieldCheckIcon,
-    title: "Só estudantes",
-    text: "O cadastro exige o e-mail institucional da sua universidade.",
+    title: "Estudantes verificados",
+    text: "Estudantes entram com o e-mail da universidade, e só eles veem o contato de quem anuncia.",
   },
   {
     icon: RulerIcon,
@@ -26,6 +27,23 @@ const steps = [
     text: "Achou um lugar? Fale com quem anunciou pelo WhatsApp ou e-mail.",
   },
 ];
+
+// Texto do topo conforme quem está vendo (a busca e "Meus anúncios" chegam
+// nas issues #28 e #42; até lá o botão leva ao perfil)
+const HERO = {
+  visitor: {
+    title: "Encontre moradia perto do seu campus",
+    text: "Quartos, vagas em repúblicas e quitinetes para universitários, ordenados pela distância real até a sua universidade.",
+  },
+  ESTUDANTE: {
+    title: "Encontre moradia perto do seu campus",
+    text: "Quartos, vagas em repúblicas e quitinetes, ordenados pela distância real até a sua universidade.",
+  },
+  ANUNCIANTE: {
+    title: "Anuncie para universitários",
+    text: "Seu anúncio aparece para estudantes com a distância real até o campus. Cadastre seu WhatsApp no perfil para eles falarem com você.",
+  },
+};
 
 export default async function Home() {
   const [session, campuses] = await Promise.all([
@@ -41,30 +59,58 @@ export default async function Home() {
       orderBy: [{ university: { acronym: "asc" } }, { name: "asc" }],
     }),
   ]);
+  const hero = session ? HERO[session.user.role] : HERO.visitor;
 
   return (
     <main className="flex-1">
       <section className="border-b bg-muted/40">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 px-4 py-16 text-center sm:py-24">
           <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-            Encontre moradia perto do seu campus
+            {hero.title}
           </h1>
           <p className="max-w-xl text-lg text-balance text-muted-foreground">
-            Quartos, vagas em repúblicas e quitinetes para universitários,
-            ordenados pela distância real até a sua universidade.
+            {hero.text}
           </p>
           {session ? (
-            <Link href="/perfil" className={buttonVariants({ size: "lg" })}>
-              Completar meu perfil
-            </Link>
-          ) : (
             <div className="flex flex-wrap justify-center gap-3">
-              <Link href="/cadastro" className={buttonVariants({ size: "lg" })}>
-                Criar conta grátis
+              {session.user.role === "ANUNCIANTE" && (
+                <Link
+                  href={NEW_LISTING_PATH}
+                  className={buttonVariants({ size: "lg" })}
+                >
+                  Criar anúncio
+                </Link>
+              )}
+              <Link
+                href="/perfil"
+                className={buttonVariants({
+                  size: "lg",
+                  variant:
+                    session.user.role === "ANUNCIANTE" ? "outline" : "default",
+                })}
+              >
+                Completar meu perfil
               </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-wrap justify-center gap-3">
+                <Link
+                  href="/cadastro?papel=estudante"
+                  className={buttonVariants({ size: "lg" })}
+                >
+                  Procuro moradia
+                </Link>
+                <Link
+                  href="/cadastro?papel=anunciante"
+                  className={buttonVariants({ variant: "outline", size: "lg" })}
+                >
+                  Quero anunciar
+                </Link>
+              </div>
               <Link
                 href="/login"
-                className={buttonVariants({ variant: "outline", size: "lg" })}
+                className="text-sm text-muted-foreground underline"
               >
                 Já tenho conta
               </Link>

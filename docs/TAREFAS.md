@@ -1,49 +1,118 @@
 # Divisão de tarefas do MVP
 
 A base do projeto está pronta (Next.js, Prisma + PostGIS, shadcn/ui, Vitest,
-Playwright, Docker Compose e CI). As tarefas abaixo estão divididas em duas
-frentes que podem andar em paralelo com pouco conflito de arquivos.
+Playwright, Docker Compose e CI). As tarefas pendentes seguem as issues do
+GitHub, organizadas por milestone (Fase 4, 5 e 6); os critérios de aceite de
+cada uma estão na própria issue.
 
 Marque `[x]` ao concluir. Como os dois trabalham direto na `dev`, façam
 `git pull` antes de começar e commits pequenos e frequentes.
 
-## Frente A — Usuários, autenticação e campi
+## Decisões de produto (28/09/2026)
 
-- [x] Escolher a biblioteca de auth (Auth.js ou Better Auth) e registrar a decisão
-      no `CLAUDE.md`
-- [x] Adicionar as tabelas de auth ao `prisma/schema.prisma` e gerar a migration
-- [x] Cadastro/login com verificação por e-mail (usando o Mailpit em dev)
-- [x] Validar o domínio do e-mail contra `University.emailDomain` e vincular o
-      usuário à universidade
-- [x] Página de perfil (nome, WhatsApp e foto)
-- [x] Recuperação de senha ("Esqueci minha senha") por e-mail
-- [x] Proteger as rotas que exigem login (`src/proxy.ts`; ao criar as páginas de
-      anúncio, acrescentá-las ao `matcher`)
-- [x] Seed (`prisma/seed.ts`) com universidades e campi reais, com coordenadas
-- [x] Layout base: cabeçalho, navegação e estado logado/deslogado
+Quem aluga imóvel geralmente não é estudante, então o cadastro passa a ter dois
+papéis (#40):
 
-## Frente B — Anúncios, busca por distância e mapa
+| Papel          | E-mail aceito                              | Pode anunciar | Vê o contato dos anúncios |
+| -------------- | ------------------------------------------ | ------------- | ------------------------- |
+| **Estudante**  | Só institucional (universidade cadastrada) | Sim           | Sim (logado)              |
+| **Anunciante** | Qualquer e-mail, confirmado                | Sim           | Não                       |
+| Visitante      | —                                          | Não           | Não                       |
 
-- [ ] Serviço de geocodificação com Nominatim (`src/lib/geo/`), com testes e
-      respeitando a política de uso (User-Agent e 1 requisição/s)
-- [ ] Formulário de criar/editar anúncio (React Hook Form + Zod), com
-      geocodificação do endereço ao salvar
-- [ ] Upload de fotos dos anúncios (Cloudinary já escolhido e configurado na
-      foto de perfil: reaproveitar `src/lib/cloudinary/`)
-- [ ] Consulta de busca com PostGIS: filtro por raio até o campus, preço e tipo,
-      ordenada por distância (`ST_DWithin` / `ST_Distance` sobre `geography`)
-- [ ] Testes de integração da busca por distância (o diferencial do TCC)
-- [ ] Página de listagem com filtros
-- [ ] Mapa com Leaflet + OpenStreetMap mostrando o campus e os anúncios
-- [ ] Página de detalhe do anúncio com links de contato (WhatsApp / e-mail)
+- **Estudante também anuncia** (ex: vaga que abriu na república onde mora).
+- **Busca, mapa e endereço completo são públicos**, sem login.
+- **O contato (WhatsApp e e-mail) só aparece para estudante logado**, e essa
+  decisão é tomada no servidor (o telefone não vai no HTML para os demais).
+  É o que dá sentido ao e-mail institucional: quem anuncia sabe que quem entra
+  em contato é estudante.
 
-Enquanto a Frente A não termina o login, a Frente B pode usar um usuário de
-teste criado direto no banco (Prisma Studio: `npm run db:studio`).
+## Decisões da busca (30/09/2026)
 
-## Compartilhadas / finais
+- **Sem campus escolhido** (visitante ou anunciante): lista os anúncios ativos
+  do mais recente para o mais antigo, sem distância, com o seletor de campus
+  em destaque. A página pública nunca fica vazia por falta de campus.
+- **Localização aproximada** (precisão "bairro"): o anúncio entra na busca por
+  raio normalmente, e o card marca a distância como aproximada ("≈ 1,2 km").
+- **Paginação** por número de página na URL (`?pagina=2`), ordenada por
+  distância e, no empate, pelo id.
+- **Raios**: 1, 2, 5 e 10 km, mais "qualquer distância" (senão os anúncios de
+  Timon nunca apareceriam para quem busca pela UFPI).
 
-- [x] Rodar os testes E2E (Playwright) no CI
-- [x] Dockerfile da aplicação e serviço `app` no `docker-compose.yml`
-- [ ] Testes E2E dos fluxos principais: cadastro → criar anúncio → buscar
-      (cadastro, login, perfil e senha já cobertos em `e2e/auth.spec.ts`)
-- [ ] Deploy (definir onde)
+## Concluído
+
+- [x] Better Auth com e-mail e senha, confirmação por e-mail e "esqueci minha
+      senha" (#17, #18, #19)
+- [x] Validação do domínio institucional contra `University.emailDomain`,
+      vinculando o usuário à universidade (#17)
+- [x] Página de perfil com nome, WhatsApp e foto (Cloudinary) (#20)
+- [x] Rotas protegidas (`src/proxy.ts`) e layout base com estado de login
+- [x] Seed com universidades e campi reais de Teresina (#21)
+- [x] Geocodificação com Nominatim, com plano B pelo bairro (#22)
+- [x] Distância anúncio–campus com PostGIS, helper `geoPoint` e índice espacial
+      (#23)
+- [x] Docker (#33), Vitest (#34) e E2E de autenticação no CI
+
+## Fase 4 — Anúncios
+
+- [x] #40 Escolha de papel no cadastro (estudante ou anunciante). O
+      anunciante já entra em "Meus anúncios"; falta levar o estudante para a
+      busca quando ela existir (#28, `homeForRole` em `src/lib/auth/routes.ts`)
+- [x] #24 Criar anúncio (`/anuncios/novo`). Depois de publicar mostra um
+      resumo com "Adicionar fotos" e "Ver meus anúncios"
+- [x] #25 Fotos do anúncio (`/anuncios/<id>/fotos`). E2E com Cloudinary falso
+      e testado com a conta real (envio, capa, remoção e foto de perfil)
+- [x] #42 Página "Meus anúncios" (`/meus-anuncios`), com "Ver", "Editar",
+      "Fotos", "Pausar" e "Excluir"
+- [x] #26 Editar (`/anuncios/<id>/editar`), pausar/reativar e excluir o
+      próprio anúncio
+- [x] #27 Página de detalhes do anúncio (`/anuncios/<id>`, pública): fotos,
+      endereço, mapa, distância até o campus (`?campus=` ou os da universidade
+      do estudante) e contato. Pausado só o dono vê; os outros recebem 404
+
+### Melhorias da Fase 4
+
+- [x] Endereço preenchido pelo CEP (ViaCEP) e checagem de CEP × estado no
+      servidor. Motivo: um endereço de Timon (MA) foi salvo como Teresina (PI),
+      que vinha pré-preenchida, e caiu num bairro homônimo de Teresina
+- [x] Os E2E apagam as contas e anúncios que criaram (`npm run db:clean-e2e`)
+- [x] Precisão da localização guardada (`locationPrecision`); a página do
+      anúncio avisa e o mapa mostra uma área quando é aproximada
+- [x] Limite de 20 anúncios por conta e de 10 envios a cada 10 minutos
+      (protege a fila do Nominatim)
+- [x] Prévia do link (Open Graph), preço/contato antes do mapa no celular,
+      confirmação com `AlertDialog` ao excluir e `npm run cloudinary:cleanup`
+- [x] Anúncio sem fotos continua aparecendo na busca, mas terminar sem fotos
+      (sair do resumo depois de publicar ou "Concluir" na página de fotos)
+      pede confirmação avisando que passa menos confiança (decisão de
+      29/09/2026)
+- [x] Páginas de erro em português (`error.tsx`, `global-error.tsx`) e
+      esqueleto de carregamento em Meus anúncios
+- [x] LGPD: "Excluir minha conta" no perfil (com senha; apaga anúncios,
+      fotos no Cloudinary e sessões) e política de privacidade (`/privacidade`)
+- Fora do MVP (decisão de 29/09/2026): pedir ao dono, de tempos em tempos,
+  que confirme que a vaga continua disponível
+
+## Fase 5 — Busca
+
+- [x] Anúncios de demonstração (`npm run db:seed-demo`): 40 anúncios em ruas
+      reais de Teresina e Timon, em volta da UFPI e da UESPI, para ver a busca,
+      os filtros e o mapa com dados
+
+- [x] #41 Consulta de busca com PostGIS e testes de integração — **o
+      diferencial do TCC**; base das demais tarefas da fase. `searchListings` e
+      os filtros da URL (`parseSearchFilters`) em `src/lib/search/`
+- [ ] #28 Listagem pública com paginação
+- [ ] #29 Filtro por distância até o campus (campus do estudante pré-selecionado)
+- [ ] #30 Filtros de preço e tipo de vaga
+- [ ] #31 Mapa com Leaflet + OpenStreetMap (o Leaflet já entrou na #27:
+      `src/components/map/`)
+- [x] #32 Botão de contato (só para estudante logado). Entrou com a página do
+      anúncio (#27): regra e links em `src/lib/listings/contact.ts`, E2E em
+      `e2e/listing-details.spec.ts`. O card da busca (#28) não repete o
+      contato: leva à página do anúncio
+
+## Fase 6 — Qualidade e entrega
+
+- [ ] #35 E2E dos fluxos principais: anunciante cria anúncio, visitante busca
+      sem ver o contato, estudante busca e vê o contato
+- [ ] #36 Deploy (banco com PostGIS, SMTP real, variáveis de ambiente)

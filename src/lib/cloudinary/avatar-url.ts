@@ -1,14 +1,16 @@
 // Funções puras sobre as URLs de avatar do Cloudinary (sem SDK, sem segredo).
+import {
+  escapeRegExp,
+  IMAGE_FORMATS,
+  matchesImageUrl,
+  transformedUrl,
+} from "./image-url";
 
-export const AVATAR_FORMATS = ["jpg", "png", "webp"] as const;
+export const AVATAR_FORMATS = IMAGE_FORMATS;
 
 /** Onde fica a foto de cada usuário: uma só, sobrescrita a cada troca. */
 export function avatarPublicId(userId: string) {
   return `uniteto/avatars/${userId}`;
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**
@@ -17,11 +19,7 @@ function escapeRegExp(value: string) {
  * pessoa ou de outro site no perfil.
  */
 export function isOwnAvatarUrl(url: string, cloudName: string, userId: string) {
-  const pattern = new RegExp(
-    `^https://res\\.cloudinary\\.com/${escapeRegExp(cloudName)}/image/upload/v\\d+/` +
-      `${escapeRegExp(avatarPublicId(userId))}\\.(${AVATAR_FORMATS.join("|")})$`,
-  );
-  return pattern.test(url);
+  return matchesImageUrl(url, cloudName, escapeRegExp(avatarPublicId(userId)));
 }
 
 /**
@@ -29,6 +27,5 @@ export function isOwnAvatarUrl(url: string, cloudName: string, userId: string) {
  * redimensiona e escolhe formato/qualidade pelo navegador.
  */
 export function avatarThumbnailUrl(url: string, size: number) {
-  const transformation = `c_fill,g_face,w_${size},h_${size},f_auto,q_auto`;
-  return url.replace("/image/upload/", `/image/upload/${transformation}/`);
+  return transformedUrl(url, `c_fill,g_face,w_${size},h_${size},f_auto,q_auto`);
 }

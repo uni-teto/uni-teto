@@ -8,5 +8,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.{ts,tsx}"],
+    // Testes de integração (banco de verdade): vitest.integration.config.mts
+    exclude: ["**/node_modules/**", "src/**/*.int.test.{ts,tsx}"],
   },
 });
