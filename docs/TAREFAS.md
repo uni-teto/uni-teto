@@ -26,6 +26,18 @@ papéis (#40):
   É o que dá sentido ao e-mail institucional: quem anuncia sabe que quem entra
   em contato é estudante.
 
+## Decisões da busca (30/09/2026)
+
+- **Sem campus escolhido** (visitante ou anunciante): lista os anúncios ativos
+  do mais recente para o mais antigo, sem distância, com o seletor de campus
+  em destaque. A página pública nunca fica vazia por falta de campus.
+- **Localização aproximada** (precisão "bairro"): o anúncio entra na busca por
+  raio normalmente, e o card marca a distância como aproximada ("≈ 1,2 km").
+- **Paginação** por número de página na URL (`?pagina=2`), ordenada por
+  distância e, no empate, pelo id.
+- **Raios**: 1, 2, 5 e 10 km, mais "qualquer distância" (senão os anúncios de
+  Timon nunca apareceriam para quem busca pela UFPI).
+
 ## Concluído
 
 - [x] Better Auth com e-mail e senha, confirmação por e-mail e "esqueci minha
@@ -86,8 +98,9 @@ papéis (#40):
       reais de Teresina e Timon, em volta da UFPI e da UESPI, para ver a busca,
       os filtros e o mapa com dados
 
-- [ ] #41 Consulta de busca com PostGIS e testes de integração — **o
-      diferencial do TCC**; base das demais tarefas da fase
+- [x] #41 Consulta de busca com PostGIS e testes de integração — **o
+      diferencial do TCC**; base das demais tarefas da fase. `searchListings` e
+      os filtros da URL (`parseSearchFilters`) em `src/lib/search/`
 - [ ] #28 Listagem pública com paginação
 - [ ] #29 Filtro por distância até o campus (campus do estudante pré-selecionado)
 - [ ] #30 Filtros de preço e tipo de vaga

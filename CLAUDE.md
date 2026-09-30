@@ -121,6 +121,14 @@ sozinho.
 - Seed: dados em `src/lib/seed/universities.ts` (com fonte de cada domínio e
   coordenada), script em `prisma/seed.ts`, `npm run db:seed`. Só adicionar
   universidade com domínio de e-mail de aluno confirmado em fonte oficial.
+- Busca: `src/lib/search/`. `parseSearchFilters` lê os filtros da URL
+  (`campus`, `raio` em km, `precoMin`/`precoMax` em reais, `tipo`, `pagina`;
+  valor inválido é ignorado) e `searchQueryString` monta os links.
+  `searchListings` devolve só anúncios ativos: com campus, filtra por
+  `ST_DWithin` e ordena por distância; sem campus, por mais recentes e sem
+  distância. Decisões em `docs/TAREFAS.md`. Os testes de integração isolam os
+  dados deles por uma faixa de preço exclusiva (o banco pode ter o seed de
+  demonstração).
 - Anúncios de demonstração: `npm run db:seed-demo` (`-- --remove` apaga),
   dados em `src/lib/seed/demo-listings.ts` (ruas e CEPs reais, imóveis
   fictícios, donos sem senha em `uniteto.example`). Grava direto no banco, sem
