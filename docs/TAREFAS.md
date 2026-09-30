@@ -118,6 +118,11 @@ papéis (#40):
       `e2e/listing-details.spec.ts`. O card da busca (#28) não repete o
       contato: leva à página do anúncio
 
+### Melhorias da Fase 5
+
+- [x] Anúncios na página inicial: os 6 mais recentes; para o estudante
+      logado, os 6 mais perto do campus da universidade dele
+
 ## Fase 6 — Qualidade e entrega
 
 - [ ] #35 E2E dos fluxos principais: anunciante cria anúncio, visitante busca

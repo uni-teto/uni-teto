@@ -17,16 +17,19 @@ export function listingHref(listingId: string, campusId: string | null) {
 }
 
 /**
- * Card de um resultado da busca. O card inteiro leva ao anúncio; com campus
+ * Card de um resultado da busca (também usado nos destaques da página inicial). O card inteiro leva ao anúncio; com campus
  * escolhido, o link guarda o campus para a página do anúncio mostrar a mesma
  * distância. O contato não aparece aqui: fica na página do anúncio.
  */
 export function ListingCard({
   listing,
   campusId,
+  titleAs: Title = "h2",
 }: {
   listing: SearchResultItem;
   campusId: string | null;
+  /** Nível do título: `h3` quando a lista fica dentro de uma seção com `h2` */
+  titleAs?: "h2" | "h3";
 }) {
   const href = listingHref(listing.id, campusId);
   // Centro do bairro: a distância pode errar bastante (decisão de 30/09/2026)
@@ -60,7 +63,7 @@ export function ListingCard({
             {LISTING_TYPE_LABELS[listing.type]} · {listing.neighborhood},{" "}
             {listing.city}
           </p>
-          <h2 className="line-clamp-2 font-medium">{listing.title}</h2>
+          <Title className="line-clamp-2 font-medium">{listing.title}</Title>
           <div className="mt-auto flex flex-wrap items-baseline justify-between gap-x-3 pt-2">
             <p className="font-semibold">
               {formatPrice(listing.priceCents)}

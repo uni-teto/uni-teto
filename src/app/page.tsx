@@ -9,6 +9,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { NEW_LISTING_PATH, SEARCH_PATH } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { searchUrl } from "@/lib/search/search-filters";
+import { searchListings } from "@/lib/search/search-listings";
+import { ListingCard } from "./busca/listing-card";
+
+// Anúncios em destaque na página inicial
+const FEATURED_LISTINGS = 6;
 
 const steps = [
   {
@@ -53,12 +59,29 @@ export default async function Home() {
         name: true,
         city: true,
         state: true,
+        universityId: true,
         university: { select: { acronym: true } },
       },
       orderBy: [{ university: { acronym: "asc" } }, { name: "asc" }],
     }),
   ]);
   const hero = session ? HERO[session.user.role] : HERO.visitor;
+
+  // Destaques: para o estudante, os mais perto do campus da universidade
+  // dele; para os outros, os mais recentes (as mesmas regras da busca)
+  const ownCampus =
+    session?.user.role === "ESTUDANTE"
+      ? campuses.find((c) => c.universityId === session.user.universityId)
+      : undefined;
+  const featuredFilters = {
+    campusId: ownCampus?.id ?? null,
+    radiusKm: null,
+    minPriceCents: null,
+    maxPriceCents: null,
+    type: null,
+    page: 1,
+  };
+  const featured = await searchListings(featuredFilters, FEATURED_LISTINGS);
 
   return (
     <main className="flex-1">
@@ -121,6 +144,39 @@ export default async function Home() {
           )}
         </div>
       </section>
+
+      {featured.items.length > 0 && (
+        <section
+          aria-labelledby="destaques"
+          className="mx-auto max-w-5xl px-4 pt-12"
+        >
+          <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="destaques" className="text-xl font-semibold">
+              {ownCampus
+                ? `Perto de ${ownCampus.university.acronym} · ${ownCampus.name}`
+                : "Anúncios recentes"}
+            </h2>
+            <Link
+              href={searchUrl(featuredFilters)}
+              className="text-sm text-muted-foreground underline"
+            >
+              {featured.total === 1
+                ? "Ver na busca"
+                : `Ver os ${featured.total} anúncios`}
+            </Link>
+          </div>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.items.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                campusId={featuredFilters.campusId}
+                titleAs="h3"
+              />
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mx-auto max-w-5xl px-4 py-12">
         <h2 className="mb-6 text-xl font-semibold">Como funciona</h2>
