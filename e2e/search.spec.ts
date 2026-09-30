@@ -208,3 +208,49 @@ test("visitante e anunciante não têm campus pré-selecionado", async ({
   await expect(page).toHaveURL("/busca");
   await expect(page.getByLabel("Campus", { exact: true })).toHaveValue("");
 });
+
+test("preço e tipo: filtra pelo formulário e combina com o campus", async ({
+  page,
+}) => {
+  await createVerifiedAccount(page, "Dona Preço", "ANUNCIANTE");
+  const price = uniquePrice();
+  await publishListing(page, { price: `${price},00` });
+  const card = page.getByRole("listitem", { name: TITLE });
+
+  await page.goto(`/busca?campus=${UFPI}`);
+  const min = page.getByLabel("Preço mínimo (R$)");
+  const max = page.getByLabel("Preço máximo (R$)");
+  // Aceita o preço como a pessoa costuma digitar; na URL vai em reais
+  await min.fill(`R$ ${price},00`);
+  await max.fill(price);
+  await page.getByRole("button", { name: "Aplicar preço" }).click();
+  await expect(page).toHaveURL(
+    `/busca?campus=${UFPI}&precoMin=${price}&precoMax=${price}`,
+  );
+  await expect(page.getByRole("status")).toContainText("1 anúncio encontrado");
+  await expect(card).toContainText("do campus");
+
+  // O anúncio é um quarto
+  const type = page.getByLabel("Tipo de vaga");
+  await type.selectOption({ label: "Quitinete" });
+  await expect(page).toHaveURL(/&tipo=QUITINETE$/);
+  await expect(page.getByText("Nenhum anúncio encontrado")).toBeVisible();
+  await type.selectOption({ label: "Quarto" });
+  await expect(page).toHaveURL(/&tipo=QUARTO$/);
+  await expect(card).toBeVisible();
+
+  // Mínimo maior que o máximo: os dois são destrocados
+  await min.fill("19999");
+  await page.getByRole("button", { name: "Aplicar preço" }).click();
+  await expect(page).toHaveURL(
+    `/busca?campus=${UFPI}&precoMin=${price}&precoMax=19999&tipo=QUARTO`,
+  );
+  await expect(min).toHaveValue(price);
+  await expect(max).toHaveValue("19999");
+
+  // "Limpar" tira preço e tipo, mas mantém o campus
+  await page.getByRole("link", { name: "Limpar", exact: true }).click();
+  await expect(page).toHaveURL(`/busca?campus=${UFPI}`);
+  await expect(min).toHaveValue("");
+  await expect(type).toHaveValue("");
+});

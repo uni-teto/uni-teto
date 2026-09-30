@@ -105,10 +105,11 @@ papéis (#40):
       tipo e distância, campus escolhido por links (o seletor com raio é a
       #29), estado vazio e filtros na URL. O estudante cai nela ao entrar
 - [x] #29 Filtro por distância até o campus: seletores de campus e raio
-      (`src/app/busca/distance-filter.tsx`). O estudante entra com o campus da
+      (`src/app/busca/search-form.tsx`). O estudante entra com o campus da
       universidade dele; se escolher "todos os campi", a URL guarda
       `campus=todos` para o campus não voltar sozinho
-- [ ] #30 Filtros de preço e tipo de vaga
+- [x] #30 Filtros de preço e tipo de vaga, no mesmo formulário do campus e do
+      raio (`src/app/busca/search-form.tsx`), com "Limpar"
 - [ ] #31 Mapa com Leaflet + OpenStreetMap (o Leaflet já entrou na #27:
       `src/components/map/`)
 - [x] #32 Botão de contato (só para estudante logado). Entrou com a página do

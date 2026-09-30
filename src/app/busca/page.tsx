@@ -9,11 +9,12 @@ import {
   NO_CAMPUS,
   parseSearchFilters,
   type SearchFilters,
+  searchQueryString,
   searchUrl,
 } from "@/lib/search/search-filters";
 import { searchListings } from "@/lib/search/search-listings";
-import { DistanceFilter } from "./distance-filter";
 import { ListingCard } from "./listing-card";
+import { SearchForm } from "./search-form";
 
 export const metadata: Metadata = {
   title: "Buscar moradia | UniTeto",
@@ -97,27 +98,24 @@ export default async function SearchPage({
           : ", dos mais recentes para os mais antigos."}
       </p>
 
-      {campuses.length > 0 && (
-        <section
-          aria-label="Filtros"
-          className="mt-6 rounded-xl border bg-muted/40 p-4"
-        >
-          <DistanceFilter
-            campuses={campuses.map((c) => ({
-              id: c.id,
-              label: campusLabel(c),
-            }))}
-            filters={urlFilters}
-            noCampusValue={noCampusValue}
-          />
-          {!campus && (
-            <p className="mt-3 text-sm text-muted-foreground">
-              Escolha um campus para ver a distância de cada anúncio e ordenar
-              do mais perto para o mais longe.
-            </p>
-          )}
-        </section>
-      )}
+      <section
+        aria-label="Filtros"
+        className="mt-6 rounded-xl border bg-muted/40 p-4"
+      >
+        <SearchForm
+          // Remonta quando a URL muda, para os campos de preço acompanharem
+          key={searchQueryString(urlFilters)}
+          campuses={campuses.map((c) => ({ id: c.id, label: campusLabel(c) }))}
+          filters={urlFilters}
+          noCampusValue={noCampusValue}
+        />
+        {!campus && campuses.length > 0 && (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Escolha um campus para ver a distância de cada anúncio e ordenar do
+            mais perto para o mais longe.
+          </p>
+        )}
+      </section>
 
       {result.items.length === 0 ? (
         <div className="mt-8 flex flex-col items-center gap-4 rounded-xl border border-dashed px-4 py-16 text-center">

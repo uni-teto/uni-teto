@@ -131,7 +131,9 @@ sozinho.
   existe vira busca sem campus e página além da última redireciona para a
   última. Estudante sem `?campus=` é redirecionado para o campus da
   universidade dele; `campus=todos` (`NO_CAMPUS`) marca que ele escolheu ver
-  todos. Nos E2E, ache o anúncio do teste por um preço exclusivo
+  todos. Filtros em `src/app/busca/search-form.tsx`: os seletores aplicam na
+  hora e o preço ao enviar; a página troca a `key` do formulário quando a URL
+  muda. Nos E2E, ache o anúncio do teste por um preço exclusivo
   (`publishListing(page, { price })` e `?precoMin=&precoMax=`), porque os
   títulos se repetem. Os testes de integração isolam os
   dados deles por uma faixa de preço exclusiva (o banco pode ter o seed de
