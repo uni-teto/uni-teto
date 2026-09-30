@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  NO_CAMPUS,
   parseSearchFilters,
   searchQueryString,
   searchUrl,
@@ -109,6 +110,14 @@ describe("searchQueryString", () => {
 
   it("não leva o raio sem campus", () => {
     expect(searchQueryString({ ...EMPTY, radiusKm: 2 })).toBe("");
+  });
+});
+
+describe("NO_CAMPUS", () => {
+  it("fica na URL e é lido de volta, para o campus do estudante não voltar", () => {
+    const url = searchUrl({ ...EMPTY, campusId: NO_CAMPUS, page: 2 });
+    expect(url).toBe("/busca?campus=todos&pagina=2");
+    expect(parseSearchFilters({ campus: "todos" }).campusId).toBe(NO_CAMPUS);
   });
 });
 

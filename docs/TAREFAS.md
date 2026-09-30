@@ -104,7 +104,10 @@ papéis (#40):
 - [x] #28 Listagem pública com paginação (`/busca`): cards com capa, preço,
       tipo e distância, campus escolhido por links (o seletor com raio é a
       #29), estado vazio e filtros na URL. O estudante cai nela ao entrar
-- [ ] #29 Filtro por distância até o campus (campus do estudante pré-selecionado)
+- [x] #29 Filtro por distância até o campus: seletores de campus e raio
+      (`src/app/busca/distance-filter.tsx`). O estudante entra com o campus da
+      universidade dele; se escolher "todos os campi", a URL guarda
+      `campus=todos` para o campus não voltar sozinho
 - [ ] #30 Filtros de preço e tipo de vaga
 - [ ] #31 Mapa com Leaflet + OpenStreetMap (o Leaflet já entrou na #27:
       `src/components/map/`)

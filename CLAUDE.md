@@ -129,7 +129,9 @@ sozinho.
   distância. Decisões em `docs/TAREFAS.md`. Página pública em `/busca`
   (`SEARCH_PATH`, `src/app/busca/`; links com `searchUrl`): campus que não
   existe vira busca sem campus e página além da última redireciona para a
-  última. Nos E2E, ache o anúncio do teste por um preço exclusivo
+  última. Estudante sem `?campus=` é redirecionado para o campus da
+  universidade dele; `campus=todos` (`NO_CAMPUS`) marca que ele escolheu ver
+  todos. Nos E2E, ache o anúncio do teste por um preço exclusivo
   (`publishListing(page, { price })` e `?precoMin=&precoMax=`), porque os
   títulos se repetem. Os testes de integração isolam os
   dados deles por uma faixa de preço exclusiva (o banco pode ter o seed de

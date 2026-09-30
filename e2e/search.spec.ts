@@ -59,10 +59,11 @@ test("visitante busca sem login, escolhe o campus e abre um anúncio", async ({
   expect(html).not.toContain("wa.me");
 
   // Escolher o campus ordena por distância e fica na URL
+  // Sem campus não há de onde medir o raio
+  await expect(visitor.getByLabel("Distância até o campus")).toBeDisabled();
   await visitor
-    .getByRole("navigation", { name: "Campus" })
-    .getByRole("link", { name: "UFPI · Campus Ministro Petrônio Portella" })
-    .click();
+    .getByLabel("Campus", { exact: true })
+    .selectOption({ label: "UFPI · Campus Ministro Petrônio Portella" });
   await expect(visitor).toHaveURL(`/busca?campus=${UFPI}&${priceQuery}`);
   await expect(visitor.getByRole("heading", { level: 1 })).toContainText(
     "Moradia perto de UFPI",
@@ -128,9 +129,82 @@ test("filtros inválidos e página além da última não quebram a busca", async
   await expect(page).not.toHaveURL(/pagina=999/);
 });
 
-test("estudante logado chega à busca pela página inicial", async ({ page }) => {
+test("raio: só aparecem os anúncios dentro da distância escolhida", async ({
+  page,
+}) => {
+  await createVerifiedAccount(page, "Dona Raio", "ANUNCIANTE");
+  const price = uniquePrice();
+  // O endereço dos testes fica no Centro, a uns 3,5 km da UFPI
+  await publishListing(page, { price: `${price},00` });
+  const priceQuery = `precoMin=${price}&precoMax=${price}`;
+
+  await page.goto(`/busca?campus=${UFPI}&${priceQuery}`);
+  await expect(page.getByRole("listitem", { name: TITLE })).toBeVisible();
+  const radius = page.getByLabel("Distância até o campus");
+  await expect(radius).toHaveValue("");
+
+  await radius.selectOption({ label: "Até 1 km" });
+  await expect(page).toHaveURL(`/busca?campus=${UFPI}&raio=1&${priceQuery}`);
+  await expect(page.getByRole("status")).toContainText(
+    "0 anúncios encontrados, a até 1 km do campus",
+  );
+  await expect(page.getByText("Nenhum anúncio encontrado")).toBeVisible();
+
+  await radius.selectOption({ label: "Até 5 km" });
+  await expect(page).toHaveURL(`/busca?campus=${UFPI}&raio=5&${priceQuery}`);
+  await expect(page.getByRole("listitem", { name: TITLE })).toContainText(
+    /[0-9](,[0-9])? km do campus/,
+  );
+
+  // Tirar o campus tira o raio junto
+  await page
+    .getByLabel("Campus", { exact: true })
+    .selectOption({ label: "Todos os campi (sem distância)" });
+  await expect(page).toHaveURL(`/busca?${priceQuery}`);
+  await expect(page.getByRole("listitem", { name: TITLE })).not.toContainText(
+    "do campus",
+  );
+});
+
+test("estudante entra na busca com o campus da universidade dele", async ({
+  page,
+}) => {
+  // E-mail @ufpi.edu.br: vinculado à UFPI
   await createVerifiedAccount(page, "Aluno Busca", "ESTUDANTE");
   await page.goto("/");
   await page.getByRole("link", { name: "Buscar moradia" }).click();
+  await expect(page).toHaveURL(`/busca?campus=${UFPI}`);
+  await expect(page.getByLabel("Campus", { exact: true })).toHaveValue(UFPI);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "Moradia perto de UFPI",
+  );
+
+  // Pode trocar de campus...
+  await page
+    .getByLabel("Campus", { exact: true })
+    .selectOption({ label: "UESPI · Campus Poeta Torquato Neto" });
+  await expect(page).toHaveURL("/busca?campus=uespi-torquato-neto");
+
+  // ...ou ver todos, sem o campus dele voltar sozinho
+  await page
+    .getByLabel("Campus", { exact: true })
+    .selectOption({ label: "Todos os campi (sem distância)" });
+  await expect(page).toHaveURL("/busca?campus=todos");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Buscar moradia" }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(page).toHaveURL("/busca?campus=todos");
+});
+
+test("visitante e anunciante não têm campus pré-selecionado", async ({
+  page,
+}) => {
+  await page.goto("/busca");
+  await expect(page.getByLabel("Campus", { exact: true })).toHaveValue("");
+
+  await createVerifiedAccount(page, "Dono Sem Campus", "ANUNCIANTE");
+  await page.goto("/busca");
   await expect(page).toHaveURL("/busca");
+  await expect(page.getByLabel("Campus", { exact: true })).toHaveValue("");
 });

@@ -13,6 +13,13 @@ export type RadiusKm = (typeof RADIUS_OPTIONS_KM)[number];
 
 export const PAGE_SIZE = 12;
 
+/**
+ * `?campus=todos`: o estudante escolheu ver todos os campi. Sem isso a busca
+ * voltaria sozinha para o campus da universidade dele (src/app/busca/page.tsx).
+ * Não é id de campus, então a busca trata como "sem campus".
+ */
+export const NO_CAMPUS = "todos";
+
 // Acima disso o OFFSET fica caro e não há tanto anúncio assim
 const MAX_PAGE = 1000;
 // Maior preço aceito num filtro, em reais (cabe folgado num inteiro do banco)
