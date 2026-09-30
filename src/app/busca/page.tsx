@@ -106,7 +106,7 @@ export default async function SearchPage({
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
       <SearchUiProvider>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-3xl font-semibold text-balance">
           {campus
             ? `Moradia perto de ${campusLabel(campus)}`
             : "Buscar moradia"}
@@ -175,7 +175,7 @@ export default async function SearchPage({
           )}
 
           {result.items.length === 0 ? (
-            <div className="mt-8 flex flex-col items-center gap-4 rounded-xl border border-dashed px-4 py-16 text-center">
+            <div className="mt-8 flex flex-col items-center gap-4 rounded-2xl border border-dashed bg-card px-4 py-16 text-center">
               <SearchXIcon
                 className="size-8 text-muted-foreground"
                 aria-hidden

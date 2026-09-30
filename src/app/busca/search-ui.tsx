@@ -109,7 +109,7 @@ export function FiltersPanel({
   return (
     <section
       aria-label="Filtros"
-      className="mt-6 rounded-xl border bg-muted/40 p-4"
+      className="mt-6 sm:rounded-2xl sm:border sm:bg-card sm:p-5 sm:shadow-sm"
     >
       <Button
         type="button"
@@ -125,7 +125,10 @@ export function FiltersPanel({
       </Button>
       <div
         id="filtros"
-        className={cn("sm:mt-0 sm:block", open ? "mt-4" : "hidden")}
+        className={cn(
+          "sm:mt-0 sm:block sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none",
+          open ? "mt-3 rounded-2xl border bg-card p-4 shadow-sm" : "hidden",
+        )}
       >
         {children}
       </div>

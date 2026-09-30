@@ -16,7 +16,7 @@ export default function MyListingsLoading() {
         {Array.from({ length: 3 }, (_, index) => (
           <div
             key={index}
-            className="flex flex-col gap-4 rounded-xl border p-4 sm:flex-row"
+            className="flex flex-col gap-4 rounded-2xl border bg-card p-4 sm:flex-row"
           >
             <Skeleton className="aspect-[4/3] w-full shrink-0 rounded-lg sm:w-40" />
             <div className="flex flex-1 flex-col gap-2">

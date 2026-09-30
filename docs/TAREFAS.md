@@ -131,6 +131,20 @@ papéis (#40):
 - [x] No celular os filtros ficam atrás do botão "Filtros" (aberto quando
       ainda não há campus escolhido)
 
+### Identidade visual (30/09/2026)
+
+Decisões: site em **preto e branco**, como a logo; **só tema claro** (a logo é
+preta e some em fundo escuro); repaginada em todas as telas.
+
+- [x] Logo no cabeçalho, no rodapé e no favicon (`public/brand/`, variações
+      geradas por `node scripts/build-logo.mjs`)
+- [x] Títulos em Poppins, botões em pílula, campos mais altos, cantos mais
+      arredondados, fundo cinza claro com cartões brancos
+- [x] Página inicial nova: topo com os campi atendidos, destaques, "Como
+      funciona" numerado e faixa para quem quer anunciar
+- [x] Cards de anúncio, busca, página do anúncio, formulários, perfil, Meus
+      anúncios e páginas de erro no mesmo padrão
+
 ## Fase 6 — Qualidade e entrega
 
 - [ ] #35 E2E dos fluxos principais: anunciante cria anúncio, visitante busca

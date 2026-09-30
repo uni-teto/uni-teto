@@ -184,6 +184,15 @@ sozinho.
   outro serviço externo, atualize a página.
 - Respostas de auth não revelam se um e-mail existe (cadastro repetido e
   "esqueci minha senha" mostram a mesma mensagem; o aviso vai por e-mail).
+- Identidade visual: preto e branco, como a logo, e **só tema claro** (não há
+  bloco `.dark` em `src/app/globals.css`; não acrescentar cor de destaque sem
+  pedido). Fundo da página cinza claro (`--page`) com cartões brancos
+  (`bg-card`, `rounded-2xl border`). Títulos (`h1` a `h3`) em Poppins
+  (`font-heading`); botões em pílula (`buttonVariants`). Logo: componente
+  `Logo` (`src/components/logo.tsx`, variantes `horizontal` e `symbol`,
+  `inverted` em fundo escuro); os arquivos em `public/brand/` e o favicon
+  (`src/app/icon.svg`) são gerados por `node scripts/build-logo.mjs` a partir
+  de `public/brand/uniteto-logo.svg`.
 - Feedback de ações (salvou, enviou, saiu): toast do `sonner`
   (`import { toast } from "sonner"`); erros de campo ficam no formulário.
 - Depois de mudar o schema, `npm run db:migrate` (já roda o `prisma generate`;

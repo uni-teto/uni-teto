@@ -195,7 +195,7 @@ export default async function ListingPage({
       {isOwner && (
         <div
           role="note"
-          className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/50 p-4 text-sm"
+          className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-4 text-sm shadow-sm"
         >
           <p>
             {listing.status === "PAUSADO"
@@ -238,7 +238,7 @@ export default async function ListingPage({
             <p className="text-sm text-muted-foreground">
               {LISTING_TYPE_LABELS[listing.type]}
             </p>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="text-3xl font-semibold text-balance">
               {listing.title}
             </h1>
             <p className="leading-relaxed whitespace-pre-line">
@@ -270,7 +270,7 @@ export default async function ListingPage({
               <span>{locationWarning}</span>
             </p>
           )}
-          <div className="h-80 overflow-hidden rounded-xl border">
+          <div className="h-80 overflow-hidden rounded-2xl border">
             <LazyListingMap
               listing={{
                 title: listing.title,
@@ -290,7 +290,7 @@ export default async function ListingPage({
         </section>
 
         <aside className="space-y-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
-          <div className="space-y-2 rounded-xl border p-4">
+          <div className="space-y-2 rounded-2xl border bg-card p-5 shadow-sm">
             <p className="text-2xl font-semibold">
               {formatPrice(listing.priceCents)}
               <span className="text-sm font-normal text-muted-foreground">
@@ -308,7 +308,7 @@ export default async function ListingPage({
 
           <section
             aria-labelledby="distancia"
-            className="space-y-3 rounded-xl border p-4"
+            className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm"
           >
             <h2
               id="distancia"
@@ -376,7 +376,7 @@ function ContactCard({
   return (
     <section
       aria-labelledby="contato"
-      className="space-y-3 rounded-xl border p-4"
+      className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm"
     >
       <h2 id="contato" className="text-sm font-medium">
         Contato

@@ -88,7 +88,7 @@ export function SearchForm({
 
   return (
     <form
-      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
+      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       aria-busy={pending}
       onSubmit={(event) => {
         event.preventDefault();
@@ -97,7 +97,7 @@ export function SearchForm({
     >
       {campuses.length > 0 && (
         <>
-          <div className="flex flex-col gap-2 lg:col-span-3">
+          <div className="flex flex-col gap-2 lg:col-span-2">
             <Label htmlFor="campus">Campus</Label>
             <NativeSelect
               id="campus"
@@ -208,7 +208,7 @@ export function SearchForm({
         />
       </div>
 
-      <div className="flex items-end gap-2">
+      <div className="flex items-center gap-2 sm:col-span-2 lg:col-span-4 lg:justify-end">
         <Button type="submit" disabled={pending}>
           Aplicar preço
         </Button>

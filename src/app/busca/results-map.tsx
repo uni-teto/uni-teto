@@ -56,7 +56,7 @@ export function ResultsMap({
         {open ? "Esconder mapa" : "Ver no mapa"}
       </Button>
       {visible && (
-        <div className="mt-3 h-80 overflow-hidden rounded-xl border sm:mt-0 sm:h-96">
+        <div className="mt-3 h-80 overflow-hidden rounded-2xl border sm:mt-0 sm:h-96">
           <LazySearchMap
             campus={campus}
             radiusMeters={radiusMeters}

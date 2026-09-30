@@ -16,7 +16,7 @@ export function PhotoGallery({
 
   if (urls.length === 0) {
     return (
-      <div className="flex h-40 items-center justify-center rounded-xl bg-muted text-sm text-muted-foreground">
+      <div className="flex h-40 items-center justify-center rounded-2xl border bg-muted text-sm text-muted-foreground">
         Sem fotos
       </div>
     );
@@ -29,7 +29,7 @@ export function PhotoGallery({
       <img
         src={listingPhotoThumbnailUrl(urls[selected], 960, 720)}
         alt={`Foto ${selected + 1} de ${urls.length}: ${title}`}
-        className="aspect-[4/3] w-full rounded-xl bg-muted object-cover"
+        className="aspect-[4/3] w-full rounded-2xl bg-muted object-cover"
       />
       {urls.length > 1 && (
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">

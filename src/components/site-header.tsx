@@ -2,6 +2,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { NEW_LISTING_PATH, SEARCH_PATH } from "@/lib/auth/routes";
 import { getSessionOrNull } from "@/lib/auth/session";
+import { Logo } from "./logo";
 import { UserMenu } from "./user-menu";
 
 export async function SiteHeader() {
@@ -9,13 +10,15 @@ export async function SiteHeader() {
   const session = await getSessionOrNull();
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        <Link href="/" className="font-semibold tracking-tight">
-          UniTeto
+    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4">
+        <Link href="/" className="shrink-0 rounded-md">
+          {/* No celular só o símbolo, para sobrar espaço para os botões */}
+          <Logo className="hidden h-8 sm:block" />
+          <Logo variant="symbol" className="h-9 sm:hidden" />
         </Link>
 
-        <nav className="flex items-center gap-2 text-sm">
+        <nav className="flex items-center gap-1 text-sm sm:gap-2">
           <Link
             href={SEARCH_PATH}
             className={buttonVariants({ variant: "ghost", size: "sm" })}
@@ -27,7 +30,7 @@ export async function SiteHeader() {
               {/* Estudante e anunciante podem anunciar */}
               <Link
                 href={NEW_LISTING_PATH}
-                className={buttonVariants({ variant: "outline", size: "sm" })}
+                className={buttonVariants({ size: "sm" })}
               >
                 Anunciar
               </Link>
