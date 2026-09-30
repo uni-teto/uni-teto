@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { listingPath } from "@/lib/auth/routes";
 import { listingPhotoThumbnailUrl } from "@/lib/cloudinary/listing-photo-url";
@@ -5,16 +7,8 @@ import { formatDistance } from "@/lib/geo/distance";
 import { LISTING_TYPE_LABELS } from "@/lib/listings/listing-types";
 import { formatPrice } from "@/lib/listings/price";
 import type { SearchResultItem } from "@/lib/search/search-listings";
-
-/**
- * Link para o anúncio. Com campus escolhido, guarda o campus para a página do
- * anúncio mostrar a mesma distância.
- */
-export function listingHref(listingId: string, campusId: string | null) {
-  return campusId
-    ? `${listingPath(listingId)}?campus=${encodeURIComponent(campusId)}`
-    : listingPath(listingId);
-}
+import { cn } from "@/lib/utils";
+import { useSearchUi } from "./search-ui";
 
 /**
  * Card de um resultado da busca (também usado nos destaques da página inicial). O card inteiro leva ao anúncio; com campus
@@ -31,15 +25,28 @@ export function ListingCard({
   /** Nível do título: `h3` quando a lista fica dentro de uma seção com `h2` */
   titleAs?: "h2" | "h3";
 }) {
-  const href = listingHref(listing.id, campusId);
+  const href = listingPath(listing.id, campusId);
+  // Na busca, o card e o marcador do mapa se destacam juntos
+  const { activeId, setActiveId } = useSearchUi();
+  const active = activeId === listing.id;
   // Centro do bairro: a distância pode errar bastante (decisão de 30/09/2026)
   const approximate = listing.locationPrecision === "bairro";
 
   return (
-    <li aria-label={listing.title}>
+    <li
+      aria-label={listing.title}
+      data-active={active || undefined}
+      onMouseEnter={() => setActiveId(listing.id)}
+      onMouseLeave={() => setActiveId(null)}
+      onFocus={() => setActiveId(listing.id)}
+      onBlur={() => setActiveId(null)}
+    >
       <Link
         href={href}
-        className="group flex h-full flex-col overflow-hidden rounded-xl border transition-colors hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        className={cn(
+          "group flex h-full flex-col overflow-hidden rounded-xl border transition-colors hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+          active && "border-foreground/30 ring-2 ring-ring",
+        )}
       >
         <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
           {listing.coverUrl ? (

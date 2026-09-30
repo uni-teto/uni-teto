@@ -32,6 +32,9 @@ export type SearchMapListing = {
   approximateRadius: number;
 };
 
+// Contorno do marcador em destaque (mouse sobre ele ou sobre o card)
+const ACTIVE_COLOR = "#450a0a";
+
 // Metros por grau de latitude (aproximação boa o bastante para enquadrar)
 const METERS_PER_DEGREE = 111_320;
 
@@ -60,11 +63,16 @@ export default function SearchMap({
   campus,
   radiusMeters,
   listings,
+  activeId,
+  onActiveChange,
 }: {
   campus: SearchMapCampus | null;
   /** Raio do filtro; `null` = qualquer distância */
   radiusMeters: number | null;
   listings: SearchMapListing[];
+  /** Anúncio em destaque (mouse sobre o card ou sobre o marcador) */
+  activeId: string | null;
+  onActiveChange: (id: string | null) => void;
 }) {
   const points: [number, number][] = [
     ...listings.map((l) => [l.latitude, l.longitude] as [number, number]),
@@ -120,11 +128,18 @@ export default function SearchMap({
         <CircleMarker
           key={listing.id}
           center={[listing.latitude, listing.longitude]}
-          radius={8}
+          // Em destaque: maior e com contorno escuro
+          radius={listing.id === activeId ? 12 : 8}
           pathOptions={{
-            color: LISTING_COLOR,
-            fillOpacity: 0.8,
+            color: listing.id === activeId ? ACTIVE_COLOR : LISTING_COLOR,
+            fillColor: LISTING_COLOR,
+            weight: listing.id === activeId ? 4 : 3,
+            fillOpacity: listing.id === activeId ? 1 : 0.8,
             className: "search-map-listing",
+          }}
+          eventHandlers={{
+            mouseover: () => onActiveChange(listing.id),
+            mouseout: () => onActiveChange(null),
           }}
         >
           <Popup>

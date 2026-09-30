@@ -305,3 +305,77 @@ test("mapa no celular fica atrás do botão Ver no mapa", async ({ page }) => {
   await map.getByRole("button", { name: "Esconder mapa" }).click();
   await expect(map.locator(".leaflet-container")).toHaveCount(0);
 });
+
+test("ordem: menor preço primeiro, pelo seletor", async ({ page }) => {
+  await createVerifiedAccount(page, "Dona Ordem", "ANUNCIANTE");
+  const cheap = Number(uniquePrice());
+  // O mais caro é publicado por último: na ordem padrão ele vem primeiro
+  await publishListing(page, { price: `${cheap},00` });
+  await publishListing(page, { price: `${cheap + 1},00` });
+  const priceQuery = `precoMin=${cheap}&precoMax=${cheap + 1}`;
+  const cards = page
+    .getByRole("main")
+    .getByRole("listitem")
+    .filter({ hasText: TITLE });
+  const thousands = (reais: number) => reais.toLocaleString("pt-BR");
+
+  await page.goto(`/busca?${priceQuery}`);
+  await expect(page.getByRole("status")).toContainText(
+    "2 anúncios encontrados, dos mais recentes para os mais antigos.",
+  );
+  await expect(cards.first()).toContainText(`${thousands(cheap + 1)},00`);
+
+  await page.getByLabel("Ordenar por").selectOption({ label: "Menor preço" });
+  await expect(page).toHaveURL(`/busca?${priceQuery}&ordem=preco`);
+  await expect(page.getByRole("status")).toContainText(
+    "do menor preço para o maior",
+  );
+  await expect(cards.first()).toContainText(`${thousands(cheap)},00`);
+  await expect(cards.last()).toContainText(`${thousands(cheap + 1)},00`);
+
+  // "Limpar" volta para a ordem padrão
+  await page.getByRole("link", { name: "Limpar", exact: true }).click();
+  await expect(page).toHaveURL("/busca");
+});
+
+test("o card sob o mouse destaca o marcador no mapa, e o contrário", async ({
+  page,
+}) => {
+  await createVerifiedAccount(page, "Dona Destaque", "ANUNCIANTE");
+  const price = uniquePrice();
+  await publishListing(page, { price: `${price},00` });
+
+  await page.goto(`/busca?precoMin=${price}&precoMax=${price}`);
+  const card = page.getByRole("listitem", { name: TITLE });
+  const marker = page.locator("path.search-map-listing");
+  await expect(marker).toHaveAttribute("stroke-width", "3");
+
+  await card.hover();
+  await expect(marker).toHaveAttribute("stroke-width", "4");
+  await page.getByRole("heading", { level: 1 }).hover();
+  await expect(marker).toHaveAttribute("stroke-width", "3");
+
+  await marker.hover();
+  await expect(card).toHaveAttribute("data-active", "true");
+});
+
+test("filtros no celular ficam atrás do botão Filtros", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  // Com campus e um filtro aplicado: o bloco começa fechado
+  await page.goto(`/busca?campus=${UFPI}&tipo=QUARTO`);
+  const toggle = page.getByRole("button", { name: "Filtros (1)" });
+  await expect(page.getByLabel("Tipo de vaga")).toBeHidden();
+
+  await toggle.click();
+  await expect(page.getByLabel("Tipo de vaga")).toBeVisible();
+  // Trocar um filtro não fecha o bloco
+  await page.getByLabel("Tipo de vaga").selectOption({ label: "Quitinete" });
+  await expect(page).toHaveURL(`/busca?campus=${UFPI}&tipo=QUITINETE`);
+  await expect(page.getByLabel("Tipo de vaga")).toBeVisible();
+  await page.getByRole("button", { name: "Esconder filtros (1)" }).click();
+  await expect(page.getByLabel("Tipo de vaga")).toBeHidden();
+
+  // Sem campus o bloco começa aberto: escolher um é o primeiro passo
+  await page.goto("/busca");
+  await expect(page.getByLabel("Campus", { exact: true })).toBeVisible();
+});

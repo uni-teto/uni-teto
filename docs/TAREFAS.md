@@ -122,6 +122,14 @@ papéis (#40):
 
 - [x] Anúncios na página inicial: os 6 mais recentes; para o estudante
       logado, os 6 mais perto do campus da universidade dele
+- [x] Ordenar por menor preço (`?ordem=preco`); no empate vale a distância
+      (com campus) ou a data (sem)
+- [x] Aviso "Atualizando os resultados..." com a lista esmaecida enquanto a
+      busca nova carrega (troca de filtro, de página ou "Limpar")
+- [x] O card sob o mouse destaca o marcador no mapa, e o marcador destaca o
+      card
+- [x] No celular os filtros ficam atrás do botão "Filtros" (aberto quando
+      ainda não há campus escolhido)
 
 ## Fase 6 — Qualidade e entrega
 

@@ -9,7 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { NEW_LISTING_PATH, SEARCH_PATH } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
-import { searchUrl } from "@/lib/search/search-filters";
+import { NO_FILTERS, searchUrl } from "@/lib/search/search-filters";
 import { searchListings } from "@/lib/search/search-listings";
 import { ListingCard } from "./busca/listing-card";
 
@@ -73,14 +73,7 @@ export default async function Home() {
     session?.user.role === "ESTUDANTE"
       ? campuses.find((c) => c.universityId === session.user.universityId)
       : undefined;
-  const featuredFilters = {
-    campusId: ownCampus?.id ?? null,
-    radiusKm: null,
-    minPriceCents: null,
-    maxPriceCents: null,
-    type: null,
-    page: 1,
-  };
+  const featuredFilters = { ...NO_FILTERS, campusId: ownCampus?.id ?? null };
   const featured = await searchListings(featuredFilters, FEATURED_LISTINGS);
 
   return (

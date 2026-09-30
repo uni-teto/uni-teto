@@ -116,6 +116,7 @@ function search(filters: Partial<SearchFilters> = {}, pageSize?: number) {
       minPriceCents: BAND_MIN,
       maxPriceCents: null,
       type: null,
+      sort: "padrao",
       page: 1,
       ...filters,
     },
@@ -318,6 +319,41 @@ describe("searchListings sem campus", () => {
   });
 });
 
+describe("searchListings por preço", () => {
+  it("põe o mais barato primeiro, dentro do raio", async () => {
+    const result = await search({ radiusKm: 5, sort: "preco" });
+    const prices = result.items.map((item) => item.priceCents);
+    expect(prices).toEqual([...prices].sort((a, b) => a - b));
+    expect(ids(result)).toEqual(
+      listingIds(["universitaria", "fatima", "joqueiA", "joqueiB", "centro"]),
+    );
+  });
+
+  it("no empate de preço, vale a distância (com campus) ou a data (sem)", async () => {
+    // "pausado" custa o mesmo que "universitaria": reativado só neste teste
+    await prisma.listing.update({
+      where: { id: listingId("pausado") },
+      data: { status: "ATIVO" },
+    });
+    try {
+      // Com campus: "pausado" está em cima do campus, vem antes
+      const near = await search({ sort: "preco" }, 2);
+      expect(ids(near)).toEqual(listingIds(["pausado", "universitaria"]));
+      // Sem campus: "pausado" foi criado por último, vem antes
+      const recent = await search({ campusId: null, sort: "preco" }, 2);
+      expect(ids(recent)).toEqual(listingIds(["pausado", "universitaria"]));
+      // O preço manda mais que a data: o mais recente ("extrema") fica no fim
+      const all = await search({ campusId: null, sort: "preco" });
+      expect(ids(all).at(-1)).toBe(listingId("extrema"));
+    } finally {
+      await prisma.listing.update({
+        where: { id: listingId("pausado") },
+        data: { status: "PAUSADO" },
+      });
+    }
+  });
+});
+
 describe("plano da busca por raio", () => {
   it("usa o índice espacial Listing_location_idx", async () => {
     const sql = searchListingsSql(
@@ -327,6 +363,7 @@ describe("plano da busca por raio", () => {
         minPriceCents: null,
         maxPriceCents: null,
         type: null,
+        sort: "padrao",
         page: 1,
       },
       12,

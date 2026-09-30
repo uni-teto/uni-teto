@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,8 +18,10 @@ import {
   RADIUS_OPTIONS_KM,
   type RadiusKm,
   type SearchFilters,
+  type SearchSort,
   searchUrl,
 } from "@/lib/search/search-filters";
+import { SearchLink, useSearchUi } from "./search-ui";
 
 export type CampusOption = { id: string; label: string };
 
@@ -59,8 +59,7 @@ export function SearchForm({
    */
   noCampusValue: string | null;
 }) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const { pending, navigate } = useSearchUi();
   const [minPrice, setMinPrice] = useState(centsToReais(filters.minPriceCents));
   const [maxPrice, setMaxPrice] = useState(centsToReais(filters.maxPriceCents));
 
@@ -71,7 +70,8 @@ export function SearchForm({
     filters.radiusKm !== null ||
     filters.minPriceCents !== null ||
     filters.maxPriceCents !== null ||
-    filters.type !== null;
+    filters.type !== null ||
+    filters.sort !== "padrao";
 
   function prices() {
     let min = reaisToCents(minPrice);
@@ -82,15 +82,13 @@ export function SearchForm({
   }
 
   function go(next: Partial<SearchFilters>) {
-    startTransition(() => {
-      // Leva junto o preço digitado e ainda não aplicado
-      router.push(searchUrl({ ...filters, ...prices(), ...next, page: 1 }));
-    });
+    // Leva junto o preço digitado e ainda não aplicado
+    navigate(searchUrl({ ...filters, ...prices(), ...next, page: 1 }));
   }
 
   return (
     <form
-      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
       aria-busy={pending}
       onSubmit={(event) => {
         event.preventDefault();
@@ -99,7 +97,7 @@ export function SearchForm({
     >
       {campuses.length > 0 && (
         <>
-          <div className="flex flex-col gap-2 lg:col-span-2">
+          <div className="flex flex-col gap-2 lg:col-span-3">
             <Label htmlFor="campus">Campus</Label>
             <NativeSelect
               id="campus"
@@ -172,6 +170,21 @@ export function SearchForm({
       </div>
 
       <div className="flex flex-col gap-2">
+        <Label htmlFor="ordem">Ordenar por</Label>
+        <NativeSelect
+          id="ordem"
+          value={filters.sort}
+          onChange={(event) => go({ sort: event.target.value as SearchSort })}
+          className="w-full"
+        >
+          <NativeSelectOption value="padrao">
+            {selectedCampus ? "Mais perto do campus" : "Mais recentes"}
+          </NativeSelectOption>
+          <NativeSelectOption value="preco">Menor preço</NativeSelectOption>
+        </NativeSelect>
+      </div>
+
+      <div className="flex flex-col gap-2">
         <Label htmlFor="precoMin">Preço mínimo (R$)</Label>
         <Input
           id="precoMin"
@@ -200,19 +213,20 @@ export function SearchForm({
           Aplicar preço
         </Button>
         {hasFilters && (
-          <Link
+          <SearchLink
             href={searchUrl({
               ...filters,
               radiusKm: null,
               minPriceCents: null,
               maxPriceCents: null,
               type: null,
+              sort: "padrao",
               page: 1,
             })}
             className={buttonVariants({ variant: "ghost" })}
           >
             Limpar
-          </Link>
+          </SearchLink>
         )}
       </div>
     </form>

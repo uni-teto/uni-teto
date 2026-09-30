@@ -19,9 +19,13 @@ export const PRIVACY_PATH = "/privacidade";
 /** Busca pública de anúncios (filtros na URL: src/lib/search/). */
 export const SEARCH_PATH = "/busca";
 
-/** Página pública de detalhes do anúncio. */
-export function listingPath(listingId: string) {
-  return `/anuncios/${encodeURIComponent(listingId)}`;
+/**
+ * Página pública de detalhes do anúncio. Com `campusId` (vindo da busca), a
+ * página já abre mostrando a distância até aquele campus.
+ */
+export function listingPath(listingId: string, campusId?: string | null) {
+  const path = `/anuncios/${encodeURIComponent(listingId)}`;
+  return campusId ? `${path}?campus=${encodeURIComponent(campusId)}` : path;
 }
 
 /** Página de edição de um anúncio (só o dono). */

@@ -125,7 +125,7 @@ sozinho.
   coordenada), script em `prisma/seed.ts`, `npm run db:seed`. Só adicionar
   universidade com domínio de e-mail de aluno confirmado em fonte oficial.
 - Busca: `src/lib/search/`. `parseSearchFilters` lê os filtros da URL
-  (`campus`, `raio` em km, `precoMin`/`precoMax` em reais, `tipo`, `pagina`;
+  (`campus`, `raio` em km, `precoMin`/`precoMax` em reais, `tipo`, `ordem`, `pagina`;
   valor inválido é ignorado) e `searchQueryString` monta os links.
   `searchListings` devolve só anúncios ativos: com campus, filtra por
   `ST_DWithin` e ordena por distância; sem campus, por mais recentes e sem
@@ -137,7 +137,10 @@ sozinho.
   todos. A página inicial mostra 6 destaques com a mesma consulta e o mesmo
   card (`ListingCard`). Filtros em `src/app/busca/search-form.tsx`: os seletores aplicam na
   hora e o preço ao enviar; a página troca a `key` do formulário quando a URL
-  muda. Nos E2E, ache o anúncio do teste por um preço exclusivo
+  muda. `src/app/busca/search-ui.tsx` guarda o estado só do navegador:
+  `useSearchUi().navigate(url)` (ou `SearchLink`) troca de busca mostrando o
+  "carregando", e `activeId` liga o card ao marcador do mapa. Ao montar um
+  `SearchFilters`, parta de `NO_FILTERS`. Nos E2E, ache o anúncio do teste por um preço exclusivo
   (`publishListing(page, { price })` e `?precoMin=&precoMax=`), porque os
   títulos se repetem. Os testes de integração isolam os
   dados deles por uma faixa de preço exclusiva (o banco pode ter o seed de

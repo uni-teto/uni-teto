@@ -8,6 +8,7 @@ import type {
   SearchMapListing,
 } from "@/components/map/search-map";
 import { Button } from "@/components/ui/button";
+import { useSearchUi } from "./search-ui";
 
 // Mesmo ponto de quebra `sm` do Tailwind
 const WIDE_SCREEN = "(min-width: 640px)";
@@ -39,6 +40,7 @@ export function ResultsMap({
     () => false,
   );
   const [open, setOpen] = useState(false);
+  const { activeId, setActiveId } = useSearchUi();
   const visible = wide || open;
 
   return (
@@ -59,6 +61,8 @@ export function ResultsMap({
             campus={campus}
             radiusMeters={radiusMeters}
             listings={listings}
+            activeId={activeId}
+            onActiveChange={setActiveId}
           />
         </div>
       )}

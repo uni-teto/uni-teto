@@ -53,6 +53,8 @@ describe("homeForRole", () => {
 describe("caminhos do anúncio", () => {
   it("codifica o id na URL", () => {
     expect(listingPath("abc")).toBe("/anuncios/abc");
+    expect(listingPath("abc", null)).toBe("/anuncios/abc");
+    expect(listingPath("abc", "ufpi 1")).toBe("/anuncios/abc?campus=ufpi%201");
     expect(editListingPath("abc")).toBe("/anuncios/abc/editar");
     expect(listingPhotosPath("a/b")).toBe("/anuncios/a%2Fb/fotos");
   });
