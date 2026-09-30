@@ -43,7 +43,10 @@ npm run db:migrate
 # 5. Cadastrar universidades e campi iniciais (pode rodar de novo sem duplicar)
 npm run db:seed
 
-# 6. Rodar a aplicação em http://localhost:3000
+# 6. (Opcional) Anúncios de demonstração, para ver a busca com dados
+npm run db:seed-demo
+
+# 7. Rodar a aplicação em http://localhost:3000
 npm run dev
 ```
 
@@ -143,6 +146,7 @@ achar que todos os arquivos foram apagados (se acontecer, `git reset` resolve).
 | `npm run test:e2e`           | Testes ponta a ponta (Playwright). Na primeira vez: `npx playwright install chromium` |
 | `npm run db:migrate`         | Cria/aplica migrations e regenera o Prisma Client                                     |
 | `npm run db:seed`            | Cadastra universidades e campi iniciais (`src/lib/seed/`)                             |
+| `npm run db:seed-demo`       | Anúncios de demonstração para a busca (`-- --remove` apaga); ver `src/lib/seed/`      |
 | `npm run db:clean-e2e`       | Apaga as contas e anúncios criados pelos testes E2E (já roda no fim do `test:e2e`)    |
 | `npm run cloudinary:cleanup` | Lista as fotos do Cloudinary sem uso; com `-- --apply`, apaga                         |
 | `npm run db:generate`        | Regenera o Prisma Client                                                              |
