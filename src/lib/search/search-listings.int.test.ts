@@ -331,16 +331,26 @@ describe("plano da busca por raio", () => {
       },
       12,
     );
-    const plan = await prisma.$transaction(async (tx) => {
-      // Com poucas linhas o PostgreSQL prefere ler a tabela toda; desligar a
-      // leitura sequencial mostra se o índice *pode* ser usado nesta consulta
-      await tx.$executeRaw`SET LOCAL enable_seqscan = off`;
-      return tx.$queryRaw<{ "QUERY PLAN": string }[]>(
-        Prisma.sql`EXPLAIN ${sql}`,
-      );
-    });
+    // Com poucas linhas o PostgreSQL prefere ler a tabela toda, ou achar os
+    // ativos pelo índice de status. Desligar a leitura sequencial e tirar esse
+    // índice (só dentro da transação, desfeita no fim) mostra se o índice
+    // espacial *pode* ser usado nesta consulta
+    const rollback = new Error("rollback");
+    let text = "";
+    await prisma
+      .$transaction(async (tx) => {
+        await tx.$executeRaw`SET LOCAL enable_seqscan = off`;
+        await tx.$executeRaw`DROP INDEX "Listing_status_type_priceCents_idx"`;
+        const plan = await tx.$queryRaw<{ "QUERY PLAN": string }[]>(
+          Prisma.sql`EXPLAIN ${sql}`,
+        );
+        text = plan.map((row) => row["QUERY PLAN"]).join("\n");
+        throw rollback;
+      })
+      .catch((error) => {
+        if (error !== rollback) throw error;
+      });
 
-    const text = plan.map((row) => row["QUERY PLAN"]).join("\n");
     expect(text).toContain("Listing_location_idx");
   });
 });
