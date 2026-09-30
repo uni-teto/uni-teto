@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { NEW_LISTING_PATH } from "@/lib/auth/routes";
+import { NEW_LISTING_PATH, SEARCH_PATH } from "@/lib/auth/routes";
 import { getSessionOrNull } from "@/lib/auth/session";
 import { UserMenu } from "./user-menu";
 
@@ -16,6 +16,12 @@ export async function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-2 text-sm">
+          <Link
+            href={SEARCH_PATH}
+            className={buttonVariants({ variant: "ghost", size: "sm" })}
+          >
+            Buscar
+          </Link>
           {session ? (
             <>
               {/* Estudante e anunciante podem anunciar */}

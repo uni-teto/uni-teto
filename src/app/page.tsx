@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { NEW_LISTING_PATH } from "@/lib/auth/routes";
+import { NEW_LISTING_PATH, SEARCH_PATH } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
@@ -28,8 +28,7 @@ const steps = [
   },
 ];
 
-// Texto do topo conforme quem está vendo (a busca e "Meus anúncios" chegam
-// nas issues #28 e #42; até lá o botão leva ao perfil)
+// Texto do topo conforme quem está vendo
 const HERO = {
   visitor: {
     title: "Encontre moradia perto do seu campus",
@@ -81,13 +80,17 @@ export default async function Home() {
                   Criar anúncio
                 </Link>
               )}
+              {session.user.role === "ESTUDANTE" && (
+                <Link
+                  href={SEARCH_PATH}
+                  className={buttonVariants({ size: "lg" })}
+                >
+                  Buscar moradia
+                </Link>
+              )}
               <Link
                 href="/perfil"
-                className={buttonVariants({
-                  size: "lg",
-                  variant:
-                    session.user.role === "ANUNCIANTE" ? "outline" : "default",
-                })}
+                className={buttonVariants({ size: "lg", variant: "outline" })}
               >
                 Completar meu perfil
               </Link>
@@ -96,10 +99,10 @@ export default async function Home() {
             <div className="flex flex-col items-center gap-3">
               <div className="flex flex-wrap justify-center gap-3">
                 <Link
-                  href="/cadastro?papel=estudante"
+                  href={SEARCH_PATH}
                   className={buttonVariants({ size: "lg" })}
                 >
-                  Procuro moradia
+                  Buscar moradia
                 </Link>
                 <Link
                   href="/cadastro?papel=anunciante"
@@ -132,28 +135,30 @@ export default async function Home() {
         </ul>
       </section>
 
-      {/* Quando a busca existir (Frente B), cada campus pode levar à listagem */}
+      {/* Cada campus leva à busca já ordenada pela distância até ele */}
       {campuses.length > 0 && (
         <section className="mx-auto max-w-5xl px-4 pb-16">
           <h2 className="mb-6 text-xl font-semibold">Campi atendidos</h2>
           <ul className="grid gap-3 sm:grid-cols-2">
             {campuses.map((campus) => (
-              <li
-                key={campus.id}
-                className="flex items-start gap-3 rounded-xl border p-4"
-              >
-                <MapPinIcon
-                  className="mt-0.5 size-5 shrink-0 text-muted-foreground"
-                  aria-hidden
-                />
-                <div>
-                  <p className="font-medium">
-                    {campus.university.acronym} · {campus.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {campus.city}, {campus.state}
-                  </p>
-                </div>
+              <li key={campus.id}>
+                <Link
+                  href={`${SEARCH_PATH}?campus=${encodeURIComponent(campus.id)}`}
+                  className="flex items-start gap-3 rounded-xl border p-4 transition-colors hover:border-foreground/30"
+                >
+                  <MapPinIcon
+                    className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <div>
+                    <p className="font-medium">
+                      {campus.university.acronym} · {campus.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {campus.city}, {campus.state}
+                    </p>
+                  </div>
+                </Link>
               </li>
             ))}
           </ul>

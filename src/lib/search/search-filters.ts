@@ -1,7 +1,8 @@
+import { SEARCH_PATH } from "@/lib/auth/routes";
 import { LISTING_TYPES, type ListingType } from "@/lib/listings/listing-types";
 
 // Filtros da busca (#41), lidos da URL para o link poder ser compartilhado:
-// `/?campus=<id>&raio=2&precoMin=300&precoMax=800&tipo=QUARTO&pagina=2`.
+// `/busca?campus=<id>&raio=2&precoMin=300&precoMax=800&tipo=QUARTO&pagina=2`.
 //
 // A página é pública e a URL pode vir de qualquer lugar: valor inválido não
 // dá erro, só é ignorado (volta ao padrão).
@@ -94,4 +95,10 @@ export function searchQueryString(filters: SearchFilters): string {
   if (filters.type) query.set("tipo", filters.type);
   if (filters.page > 1) query.set("pagina", String(filters.page));
   return query.toString();
+}
+
+/** Endereço da busca com os filtros, ex: `/busca?campus=ufpi-...&pagina=2`. */
+export function searchUrl(filters: SearchFilters): string {
+  const query = searchQueryString(filters);
+  return query ? `${SEARCH_PATH}?${query}` : SEARCH_PATH;
 }

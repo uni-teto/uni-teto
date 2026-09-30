@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   parseSearchFilters,
   searchQueryString,
+  searchUrl,
   type SearchFilters,
 } from "./search-filters";
 
@@ -108,5 +109,14 @@ describe("searchQueryString", () => {
 
   it("não leva o raio sem campus", () => {
     expect(searchQueryString({ ...EMPTY, radiusKm: 2 })).toBe("");
+  });
+});
+
+describe("searchUrl", () => {
+  it("monta o endereço da busca, sem `?` na busca padrão", () => {
+    expect(searchUrl(EMPTY)).toBe("/busca");
+    expect(searchUrl({ ...EMPTY, type: "QUARTO", page: 2 })).toBe(
+      "/busca?tipo=QUARTO&pagina=2",
+    );
   });
 });

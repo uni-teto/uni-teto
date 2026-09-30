@@ -34,10 +34,17 @@ export async function fillListingForm(
   await expect(page.getByLabel("Estado")).toHaveValue("PI");
 }
 
-/** Publica um anúncio (usuário já logado) e termina no resumo. */
-export async function publishListing(page: Page) {
+/**
+ * Publica um anúncio (usuário já logado) e termina no resumo. `price` troca
+ * o valor mensal (ex: "9100,00"), para achar o anúncio pelo filtro da busca.
+ */
+export async function publishListing(
+  page: Page,
+  { price }: { price?: string } = {},
+) {
   await page.goto("/anuncios/novo");
   await fillListingForm(page);
+  if (price) await page.getByLabel("Valor mensal (R$)").fill(price);
   await page.getByRole("button", { name: "Publicar anúncio" }).click();
   await expect(page.getByRole("status")).toContainText(
     "Seu anúncio foi publicado!",

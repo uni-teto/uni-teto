@@ -126,7 +126,12 @@ sozinho.
   valor inválido é ignorado) e `searchQueryString` monta os links.
   `searchListings` devolve só anúncios ativos: com campus, filtra por
   `ST_DWithin` e ordena por distância; sem campus, por mais recentes e sem
-  distância. Decisões em `docs/TAREFAS.md`. Os testes de integração isolam os
+  distância. Decisões em `docs/TAREFAS.md`. Página pública em `/busca`
+  (`SEARCH_PATH`, `src/app/busca/`; links com `searchUrl`): campus que não
+  existe vira busca sem campus e página além da última redireciona para a
+  última. Nos E2E, ache o anúncio do teste por um preço exclusivo
+  (`publishListing(page, { price })` e `?precoMin=&precoMax=`), porque os
+  títulos se repetem. Os testes de integração isolam os
   dados deles por uma faixa de preço exclusiva (o banco pode ter o seed de
   demonstração).
 - Anúncios de demonstração: `npm run db:seed-demo` (`-- --remove` apaga),

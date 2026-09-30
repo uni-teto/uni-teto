@@ -16,6 +16,9 @@ export const MY_LISTINGS_PATH = "/meus-anuncios";
 
 export const PRIVACY_PATH = "/privacidade";
 
+/** Busca pública de anúncios (filtros na URL: src/lib/search/). */
+export const SEARCH_PATH = "/busca";
+
 /** Página pública de detalhes do anúncio. */
 export function listingPath(listingId: string) {
   return `/anuncios/${encodeURIComponent(listingId)}`;
@@ -52,9 +55,8 @@ export function signInUrl(next: string) {
 
 /**
  * Para onde vai quem acabou de entrar sem ter pedido uma página: anunciante
- * para "Meus anúncios"; estudante para a página inicial (a busca, #28, quando
- * existir).
+ * para "Meus anúncios"; estudante para a busca.
  */
 export function homeForRole(role: "ESTUDANTE" | "ANUNCIANTE") {
-  return role === "ANUNCIANTE" ? MY_LISTINGS_PATH : "/";
+  return role === "ANUNCIANTE" ? MY_LISTINGS_PATH : SEARCH_PATH;
 }

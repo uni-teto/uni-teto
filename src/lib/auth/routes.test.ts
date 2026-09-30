@@ -44,9 +44,9 @@ describe("signInUrl", () => {
 });
 
 describe("homeForRole", () => {
-  it("leva o anunciante para Meus anúncios e o estudante para o início", () => {
+  it("leva o anunciante para Meus anúncios e o estudante para a busca", () => {
     expect(homeForRole("ANUNCIANTE")).toBe("/meus-anuncios");
-    expect(homeForRole("ESTUDANTE")).toBe("/");
+    expect(homeForRole("ESTUDANTE")).toBe("/busca");
   });
 });
 

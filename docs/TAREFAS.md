@@ -55,8 +55,8 @@ papéis (#40):
 ## Fase 4 — Anúncios
 
 - [x] #40 Escolha de papel no cadastro (estudante ou anunciante). O
-      anunciante já entra em "Meus anúncios"; falta levar o estudante para a
-      busca quando ela existir (#28, `homeForRole` em `src/lib/auth/routes.ts`)
+      anunciante já entra em "Meus anúncios" e o estudante na busca
+      (`homeForRole` em `src/lib/auth/routes.ts`)
 - [x] #24 Criar anúncio (`/anuncios/novo`). Depois de publicar mostra um
       resumo com "Adicionar fotos" e "Ver meus anúncios"
 - [x] #25 Fotos do anúncio (`/anuncios/<id>/fotos`). E2E com Cloudinary falso
@@ -101,7 +101,9 @@ papéis (#40):
 - [x] #41 Consulta de busca com PostGIS e testes de integração — **o
       diferencial do TCC**; base das demais tarefas da fase. `searchListings` e
       os filtros da URL (`parseSearchFilters`) em `src/lib/search/`
-- [ ] #28 Listagem pública com paginação
+- [x] #28 Listagem pública com paginação (`/busca`): cards com capa, preço,
+      tipo e distância, campus escolhido por links (o seletor com raio é a
+      #29), estado vazio e filtros na URL. O estudante cai nela ao entrar
 - [ ] #29 Filtro por distância até o campus (campus do estudante pré-selecionado)
 - [ ] #30 Filtros de preço e tipo de vaga
 - [ ] #31 Mapa com Leaflet + OpenStreetMap (o Leaflet já entrou na #27:
