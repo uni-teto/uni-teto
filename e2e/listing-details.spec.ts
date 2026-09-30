@@ -66,6 +66,15 @@ test("visitante vê o anúncio e o mapa, mas não o contato", async ({
   await expect(
     visitor.getByText("Entre com seu e-mail de estudante para ver o contato."),
   ).toBeVisible();
+  // Depois de entrar, volta para o anúncio
+  const contact = visitor.getByRole("region", { name: "Contato" });
+  await expect(contact.getByRole("link", { name: "Entrar" })).toHaveAttribute(
+    "href",
+    `/login?next=${encodeURIComponent(path)}`,
+  );
+  await expect(
+    contact.getByRole("link", { name: "Criar conta de estudante" }),
+  ).toHaveAttribute("href", "/cadastro?papel=estudante");
   const html = await response!.text();
   expect(html).not.toContain(email);
   expect(html).not.toContain("99999");
@@ -113,6 +122,33 @@ test("estudante vê o contato e a distância até o campus dele", async ({
     "href",
     /^mailto:/,
   );
+
+  await studentContext.close();
+});
+
+test("sem WhatsApp no perfil do dono, o estudante vê só o e-mail", async ({
+  page,
+  browser,
+}) => {
+  const owner = await createVerifiedAccount(page, "Seu Raimundo", "ANUNCIANTE");
+  await publishListing(page);
+  await leaveSummaryWithoutPhotos(page, "Ver anúncio");
+  await expect(page.getByRole("heading", { name: TITLE })).toBeVisible();
+  const path = new URL(page.url()).pathname;
+
+  const studentContext = await browser.newContext();
+  const student = await studentContext.newPage();
+  await createVerifiedAccount(student, "Aluna Curiosa", "ESTUDANTE");
+  await student.goto(path);
+
+  const contact = student.getByRole("region", { name: "Contato" });
+  await expect(contact).toContainText("Anunciado por Seu Raimundo");
+  await expect(contact.getByRole("link", { name: /WhatsApp/ })).toHaveCount(0);
+  const email = contact.getByRole("link", { name: owner.email });
+  const href = new URL((await email.getAttribute("href"))!);
+  expect(href.protocol + href.pathname).toBe(`mailto:${owner.email}`);
+  expect(href.searchParams.get("subject")).toContain(TITLE);
+  expect(href.searchParams.get("body")).toContain(TITLE);
 
   await studentContext.close();
 });

@@ -82,6 +82,10 @@ papéis (#40):
 
 ## Fase 5 — Busca
 
+- [x] Anúncios de demonstração (`npm run db:seed-demo`): 40 anúncios em ruas
+      reais de Teresina e Timon, em volta da UFPI e da UESPI, para ver a busca,
+      os filtros e o mapa com dados
+
 - [ ] #41 Consulta de busca com PostGIS e testes de integração — **o
       diferencial do TCC**; base das demais tarefas da fase
 - [ ] #28 Listagem pública com paginação
@@ -89,8 +93,10 @@ papéis (#40):
 - [ ] #30 Filtros de preço e tipo de vaga
 - [ ] #31 Mapa com Leaflet + OpenStreetMap (o Leaflet já entrou na #27:
       `src/components/map/`)
-- [ ] #32 Botão de contato (só para estudante logado). A regra e os links já
-      estão em `src/lib/listings/contact.ts` e na página do anúncio (#27)
+- [x] #32 Botão de contato (só para estudante logado). Entrou com a página do
+      anúncio (#27): regra e links em `src/lib/listings/contact.ts`, E2E em
+      `e2e/listing-details.spec.ts`. O card da busca (#28) não repete o
+      contato: leva à página do anúncio
 
 ## Fase 6 — Qualidade e entrega
 
