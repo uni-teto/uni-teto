@@ -110,8 +110,9 @@ papéis (#40):
       `campus=todos` para o campus não voltar sozinho
 - [x] #30 Filtros de preço e tipo de vaga, no mesmo formulário do campus e do
       raio (`src/app/busca/search-form.tsx`), com "Limpar"
-- [ ] #31 Mapa com Leaflet + OpenStreetMap (o Leaflet já entrou na #27:
-      `src/components/map/`)
+- [x] #31 Mapa dos resultados (`src/components/map/search-map.tsx`): campus,
+      raio e um marcador por anúncio da página atual, com resumo e link ao
+      clicar. No celular fica atrás do botão "Ver no mapa"
 - [x] #32 Botão de contato (só para estudante logado). Entrou com a página do
       anúncio (#27): regra e links em `src/lib/listings/contact.ts`, E2E em
       `e2e/listing-details.spec.ts`. O card da busca (#28) não repete o

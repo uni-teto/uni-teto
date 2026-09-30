@@ -4,6 +4,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { getSession } from "@/lib/auth/session";
+import { formatDistance } from "@/lib/geo/distance";
+import { APPROXIMATE_RADIUS_METERS } from "@/lib/listings/location-notice";
+import { formatPrice } from "@/lib/listings/price";
 import { prisma } from "@/lib/prisma";
 import {
   NO_CAMPUS,
@@ -13,7 +16,8 @@ import {
   searchUrl,
 } from "@/lib/search/search-filters";
 import { searchListings } from "@/lib/search/search-listings";
-import { ListingCard } from "./listing-card";
+import { ListingCard, listingHref } from "./listing-card";
+import { ResultsMap } from "./results-map";
 import { SearchForm } from "./search-form";
 
 export const metadata: Metadata = {
@@ -37,6 +41,8 @@ export default async function SearchPage({
       select: {
         id: true,
         name: true,
+        latitude: true,
+        longitude: true,
         universityId: true,
         university: { select: { acronym: true } },
       },
@@ -116,6 +122,37 @@ export default async function SearchPage({
           </p>
         )}
       </section>
+
+      {/* Sem campus e sem anúncios não há o que mostrar no mapa */}
+      {(campus || result.items.length > 0) && (
+        <ResultsMap
+          campus={
+            campus && {
+              name: campusLabel(campus),
+              latitude: campus.latitude,
+              longitude: campus.longitude,
+            }
+          }
+          radiusMeters={filters.radiusKm ? filters.radiusKm * 1000 : null}
+          listings={result.items.map((listing) => ({
+            id: listing.id,
+            title: listing.title,
+            href: listingHref(listing.id, filters.campusId),
+            price: `${formatPrice(listing.priceCents)}/mês`,
+            distance:
+              listing.distanceMeters === null
+                ? null
+                : `${formatDistance(listing.distanceMeters)} do campus`,
+            latitude: listing.latitude,
+            longitude: listing.longitude,
+            // "rua" é o comum em Teresina: só o centro do bairro vira área
+            approximateRadius:
+              listing.locationPrecision === "bairro"
+                ? APPROXIMATE_RADIUS_METERS.bairro
+                : 0,
+          }))}
+        />
+      )}
 
       {result.items.length === 0 ? (
         <div className="mt-8 flex flex-col items-center gap-4 rounded-xl border border-dashed px-4 py-16 text-center">

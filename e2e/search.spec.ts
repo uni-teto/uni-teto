@@ -254,3 +254,54 @@ test("preço e tipo: filtra pelo formulário e combina com o campus", async ({
   await expect(min).toHaveValue("");
   await expect(type).toHaveValue("");
 });
+
+test("mapa: mostra o campus e os anúncios, e o marcador leva ao anúncio", async ({
+  page,
+}) => {
+  await createVerifiedAccount(page, "Dona Mapa", "ANUNCIANTE");
+  const price = uniquePrice();
+  await publishListing(page, { price: `${price},00` });
+  const priceQuery = `precoMin=${price}&precoMax=${price}`;
+
+  await page.goto(`/busca?campus=${UFPI}&raio=5&${priceQuery}`);
+  const map = page.getByRole("region", { name: "Mapa dos resultados" });
+  await expect(map.locator(".leaflet-container")).toBeVisible();
+  await expect(
+    map.getByText("UFPI · Campus Ministro Petrônio Portella"),
+  ).toBeVisible();
+  await expect(map.getByText("OpenStreetMap")).toBeVisible();
+  // Um marcador por anúncio da lista
+  const markers = map.locator("path.search-map-listing");
+  await expect(markers).toHaveCount(1);
+
+  await markers.click();
+  const popup = map.locator(".leaflet-popup-content");
+  await expect(popup).toContainText(TITLE);
+  await expect(popup).toContainText("km do campus");
+  await popup.getByRole("link", { name: "Ver anúncio" }).click();
+  await expect(page).toHaveURL(
+    /\/anuncios\/[^/?]+\?campus=ufpi-petronio-portella$/,
+  );
+  await expect(page.getByRole("heading", { name: TITLE })).toBeVisible();
+
+  // Fora do raio: o anúncio sai da lista e do mapa, o campus continua
+  await page.goto(`/busca?campus=${UFPI}&raio=1&${priceQuery}`);
+  await expect(map.locator(".leaflet-container")).toBeVisible();
+  await expect(markers).toHaveCount(0);
+
+  // Sem campus o mapa mostra só os anúncios
+  await page.goto(`/busca?${priceQuery}`);
+  await expect(markers).toHaveCount(1);
+});
+
+test("mapa no celular fica atrás do botão Ver no mapa", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(`/busca?campus=${UFPI}`);
+  const map = page.getByRole("region", { name: "Mapa dos resultados" });
+  await expect(map.locator(".leaflet-container")).toHaveCount(0);
+
+  await map.getByRole("button", { name: "Ver no mapa" }).click();
+  await expect(map.locator(".leaflet-container")).toBeVisible();
+  await map.getByRole("button", { name: "Esconder mapa" }).click();
+  await expect(map.locator(".leaflet-container")).toHaveCount(0);
+});

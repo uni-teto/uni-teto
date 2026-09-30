@@ -110,7 +110,10 @@ sozinho.
   o WhatsApp do dono nem são buscados no banco. Distância aos campi com
   `getCampusDistancesToListing`.
 - Mapa: `src/components/map/` (react-leaflet, só no navegador via
-  `LazyListingMap`, com `ssr: false`). Marcadores em `CircleMarker`, sem o
+  `LazyListingMap` e `LazySearchMap`, com `ssr: false`). Cores, tiles e
+  enquadramento comuns em `map-parts.tsx`. O mapa da busca (`search-map.tsx`,
+  usado por `src/app/busca/results-map.tsx`) mostra só os anúncios da página
+  atual; nos E2E os marcadores são `path.search-map-listing`. Marcadores em `CircleMarker`, sem o
   ícone padrão do Leaflet (as imagens dele não vêm com o bundler). Nos E2E os
   tiles do OSM são bloqueados com `context.route`.
 - Ações sobre um anúncio (fotos, editar, pausar, excluir): começar com

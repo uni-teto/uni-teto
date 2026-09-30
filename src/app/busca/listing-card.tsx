@@ -7,6 +7,16 @@ import { formatPrice } from "@/lib/listings/price";
 import type { SearchResultItem } from "@/lib/search/search-listings";
 
 /**
+ * Link para o anúncio. Com campus escolhido, guarda o campus para a página do
+ * anúncio mostrar a mesma distância.
+ */
+export function listingHref(listingId: string, campusId: string | null) {
+  return campusId
+    ? `${listingPath(listingId)}?campus=${encodeURIComponent(campusId)}`
+    : listingPath(listingId);
+}
+
+/**
  * Card de um resultado da busca. O card inteiro leva ao anúncio; com campus
  * escolhido, o link guarda o campus para a página do anúncio mostrar a mesma
  * distância. O contato não aparece aqui: fica na página do anúncio.
@@ -18,9 +28,7 @@ export function ListingCard({
   listing: SearchResultItem;
   campusId: string | null;
 }) {
-  const href = campusId
-    ? `${listingPath(listing.id)}?campus=${encodeURIComponent(campusId)}`
-    : listingPath(listing.id);
+  const href = listingHref(listing.id, campusId);
   // Centro do bairro: a distância pode errar bastante (decisão de 30/09/2026)
   const approximate = listing.locationPrecision === "bairro";
 
