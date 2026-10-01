@@ -33,7 +33,10 @@ test("visitante busca sem login, escolhe o campus e abre um anúncio", async ({
   const visitorContext = await browser.newContext();
   const visitor = await visitorContext.newPage();
   await visitor.goto("/");
-  await visitor.getByRole("link", { name: "Buscar moradia" }).click();
+  await visitor
+    .getByRole("search", { name: "Buscar moradia" })
+    .getByRole("button", { name: "Buscar" })
+    .click();
   await expect(visitor).toHaveURL("/busca");
   await expect(
     visitor.getByRole("heading", { level: 1, name: "Buscar moradia" }),
@@ -172,7 +175,10 @@ test("estudante entra na busca com o campus da universidade dele", async ({
   // E-mail @ufpi.edu.br: vinculado à UFPI
   await createVerifiedAccount(page, "Aluno Busca", "ESTUDANTE");
   await page.goto("/");
-  await page.getByRole("link", { name: "Buscar moradia" }).click();
+  // A busca do topo já vem com o campus dele
+  const heroSearch = page.getByRole("search", { name: "Buscar moradia" });
+  await expect(heroSearch.getByRole("combobox").first()).toHaveValue(UFPI);
+  await heroSearch.getByRole("button", { name: "Buscar" }).click();
   await expect(page).toHaveURL(`/busca?campus=${UFPI}`);
   await expect(page.getByLabel("Campus", { exact: true })).toHaveValue(UFPI);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
@@ -231,11 +237,11 @@ test("preço e tipo: filtra pelo formulário e combina com o campus", async ({
   await expect(card).toContainText("do campus");
 
   // O anúncio é um quarto
-  const type = page.getByLabel("Tipo de vaga");
-  await type.selectOption({ label: "Quitinete" });
+  const types = page.getByRole("navigation", { name: "Tipo de vaga" });
+  await types.getByRole("link", { name: "Quitinete" }).click();
   await expect(page).toHaveURL(/&tipo=QUITINETE$/);
   await expect(page.getByText("Nenhum anúncio encontrado")).toBeVisible();
-  await type.selectOption({ label: "Quarto" });
+  await types.getByRole("link", { name: "Quarto" }).click();
   await expect(page).toHaveURL(/&tipo=QUARTO$/);
   await expect(card).toBeVisible();
 
@@ -252,7 +258,10 @@ test("preço e tipo: filtra pelo formulário e combina com o campus", async ({
   await page.getByRole("link", { name: "Limpar", exact: true }).click();
   await expect(page).toHaveURL(`/busca?campus=${UFPI}`);
   await expect(min).toHaveValue("");
-  await expect(type).toHaveValue("");
+  await expect(types.getByRole("link", { name: "Todos" })).toHaveAttribute(
+    "aria-current",
+    "true",
+  );
 });
 
 test("mapa: mostra o campus e os anúncios, e o marcador leva ao anúncio", async ({
@@ -271,7 +280,7 @@ test("mapa: mostra o campus e os anúncios, e o marcador leva ao anúncio", asyn
   ).toBeVisible();
   await expect(map.getByText("OpenStreetMap")).toBeVisible();
   // Um marcador por anúncio da lista
-  const markers = map.locator("path.search-map-listing");
+  const markers = map.locator(".search-map-listing");
   await expect(markers).toHaveCount(1);
 
   await markers.click();
@@ -347,13 +356,16 @@ test("o card sob o mouse destaca o marcador no mapa, e o contrário", async ({
 
   await page.goto(`/busca?precoMin=${price}&precoMax=${price}`);
   const card = page.getByRole("listitem", { name: TITLE });
-  const marker = page.locator("path.search-map-listing");
-  await expect(marker).toHaveAttribute("stroke-width", "3");
+  const marker = page.locator(".search-map-listing");
+  await expect(marker).toHaveText(
+    `R$ ${Number(price).toLocaleString("pt-BR")}`,
+  );
+  await expect(marker).not.toHaveClass(/is-active/);
 
   await card.hover();
-  await expect(marker).toHaveAttribute("stroke-width", "4");
+  await expect(marker).toHaveClass(/is-active/);
   await page.getByRole("heading", { level: 1 }).hover();
-  await expect(marker).toHaveAttribute("stroke-width", "3");
+  await expect(marker).not.toHaveClass(/is-active/);
 
   await marker.hover();
   await expect(card).toHaveAttribute("data-active", "true");
@@ -364,16 +376,21 @@ test("filtros no celular ficam atrás do botão Filtros", async ({ page }) => {
   // Com campus e um filtro aplicado: o bloco começa fechado
   await page.goto(`/busca?campus=${UFPI}&tipo=QUARTO`);
   const toggle = page.getByRole("button", { name: "Filtros (1)" });
-  await expect(page.getByLabel("Tipo de vaga")).toBeHidden();
+  const sort = page.getByLabel("Ordenar por");
+  await expect(sort).toBeHidden();
+  // As categorias ficam fora do bloco, sempre à vista
+  await expect(
+    page.getByRole("navigation", { name: "Tipo de vaga" }),
+  ).toBeVisible();
 
   await toggle.click();
-  await expect(page.getByLabel("Tipo de vaga")).toBeVisible();
+  await expect(sort).toBeVisible();
   // Trocar um filtro não fecha o bloco
-  await page.getByLabel("Tipo de vaga").selectOption({ label: "Quitinete" });
-  await expect(page).toHaveURL(`/busca?campus=${UFPI}&tipo=QUITINETE`);
-  await expect(page.getByLabel("Tipo de vaga")).toBeVisible();
-  await page.getByRole("button", { name: "Esconder filtros (1)" }).click();
-  await expect(page.getByLabel("Tipo de vaga")).toBeHidden();
+  await sort.selectOption({ label: "Menor preço" });
+  await expect(page).toHaveURL(`/busca?campus=${UFPI}&tipo=QUARTO&ordem=preco`);
+  await expect(sort).toBeVisible();
+  await page.getByRole("button", { name: "Esconder filtros (2)" }).click();
+  await expect(sort).toBeHidden();
 
   // Sem campus o bloco começa aberto: escolher um é o primeiro passo
   await page.goto("/busca");

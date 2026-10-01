@@ -37,6 +37,9 @@ export function FitPoints({
   useEffect(() => {
     const latLngs: [number, number][] = JSON.parse(key);
     if (latLngs.length === 0) return;
+    // O tamanho do mapa pode ter mudado depois de montado (coluna fixa da
+    // busca): sem isso o enquadramento usa o tamanho antigo
+    map.invalidateSize();
     if (latLngs.length < 2) {
       map.setView(latLngs[0], zoom);
       return;

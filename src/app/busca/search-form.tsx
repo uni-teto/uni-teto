@@ -8,11 +8,6 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from "@/components/ui/native-select";
-import {
-  LISTING_TYPE_LABELS,
-  LISTING_TYPES,
-  type ListingType,
-} from "@/lib/listings/listing-types";
 import { parsePriceToCents } from "@/lib/listings/price";
 import {
   RADIUS_OPTIONS_KM,
@@ -38,7 +33,8 @@ const centsToReais = (cents: number | null) =>
   cents === null ? "" : String(cents / 100);
 
 /**
- * Filtros da busca: campus e raio (#29), tipo de vaga e faixa de preço (#30).
+ * Filtros da busca: campus e raio (#29) e faixa de preço (#30). O tipo de
+ * vaga fica nas categorias acima dos resultados (`TypeChips`).
  * Tudo vai para a URL (o link continua compartilhável) e volta para a
  * primeira página. Os seletores aplicam na hora; o preço, ao enviar.
  *
@@ -148,26 +144,6 @@ export function SearchForm({
           </div>
         </>
       )}
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="tipo">Tipo de vaga</Label>
-        <NativeSelect
-          id="tipo"
-          value={filters.type ?? ""}
-          onChange={(event) => {
-            const type = event.target.value;
-            go({ type: type ? (type as ListingType) : null });
-          }}
-          className="w-full"
-        >
-          <NativeSelectOption value="">Todos os tipos</NativeSelectOption>
-          {LISTING_TYPES.map((type) => (
-            <NativeSelectOption key={type} value={type}>
-              {LISTING_TYPE_LABELS[type]}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
-      </div>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="ordem">Ordenar por</Label>

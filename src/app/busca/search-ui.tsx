@@ -63,10 +63,13 @@ export function SearchUiProvider({ children }: { children: React.ReactNode }) {
 export function SearchLink({
   href,
   className,
+  ariaCurrent,
   children,
 }: {
   href: string;
   className?: string;
+  /** Marca o link da busca que já está aberta (ex: categoria escolhida) */
+  ariaCurrent?: boolean;
   children: React.ReactNode;
 }) {
   const { navigate } = useSearchUi();
@@ -75,6 +78,7 @@ export function SearchLink({
     <Link
       href={href}
       className={className}
+      aria-current={ariaCurrent ? "true" : undefined}
       onClick={(event) => {
         // Abrir em outra aba (Ctrl/Cmd/Shift + clique) segue como link normal
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {

@@ -11,7 +11,7 @@ const links = [
 export function SiteFooter() {
   return (
     <footer className="bg-primary text-primary-foreground">
-      <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-4">
           <Logo variant="symbol" inverted className="h-12" />
           <div>
@@ -38,7 +38,7 @@ export function SiteFooter() {
         </nav>
       </div>
       <div className="border-t border-primary-foreground/15">
-        <p className="mx-auto max-w-5xl px-4 py-4 text-xs text-primary-foreground/60">
+        <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-primary-foreground/60">
           Projeto de TCC de Sistemas para Internet
         </p>
       </div>

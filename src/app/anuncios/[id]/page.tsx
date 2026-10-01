@@ -191,7 +191,7 @@ export default async function ListingPage({
     .join(" · ");
 
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
+    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
       {isOwner && (
         <div
           role="note"
@@ -225,15 +225,15 @@ export default async function ListingPage({
         </div>
       )}
 
-      {/* No celular: fotos e descrição, depois preço/distância/contato, depois
-          o mapa. No computador, preço/distância/contato ficam na lateral. */}
-      <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
-        <div className="min-w-0 space-y-8 lg:col-start-1">
-          <PhotoGallery
-            urls={listing.photos.map((p) => p.url)}
-            title={listing.title}
-          />
+      <PhotoGallery
+        urls={listing.photos.map((p) => p.url)}
+        title={listing.title}
+      />
 
+      {/* No celular: descrição, depois preço/distância/contato, depois o mapa.
+          No computador, preço/distância/contato ficam na lateral, fixos. */}
+      <div className="mt-8 grid gap-8 pb-24 lg:grid-cols-[1fr_22rem] lg:gap-12 lg:pb-0">
+        <div className="min-w-0 space-y-8 lg:col-start-1">
           <section className="space-y-3">
             <p className="text-sm text-muted-foreground">
               {LISTING_TYPE_LABELS[listing.type]}
@@ -289,7 +289,7 @@ export default async function ListingPage({
           </div>
         </section>
 
-        <aside className="space-y-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
           <div className="space-y-2 rounded-2xl border bg-card p-5 shadow-sm">
             <p className="text-2xl font-semibold">
               {formatPrice(listing.priceCents)}
@@ -360,6 +360,19 @@ export default async function ListingPage({
           />
         </aside>
       </div>
+
+      {/* Celular: preço sempre à vista e atalho para o contato */}
+      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 border-t bg-background/95 px-4 py-3 backdrop-blur lg:hidden">
+        <p>
+          <span className="font-heading text-lg font-semibold">
+            {formatPrice(listing.priceCents)}
+          </span>
+          <span className="text-sm text-muted-foreground">/mês</span>
+        </p>
+        <a href="#contato" className={buttonVariants()}>
+          Ver contato
+        </a>
+      </div>
     </main>
   );
 }
@@ -378,7 +391,7 @@ function ContactCard({
       aria-labelledby="contato"
       className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm"
     >
-      <h2 id="contato" className="text-sm font-medium">
+      <h2 id="contato" className="scroll-mt-24 text-sm font-medium">
         Contato
       </h2>
       {contact ? (

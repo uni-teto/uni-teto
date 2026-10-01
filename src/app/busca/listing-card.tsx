@@ -1,7 +1,8 @@
 "use client";
 
-import { HouseIcon } from "lucide-react";
+import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 import { listingPath } from "@/lib/auth/routes";
 import { listingPhotoThumbnailUrl } from "@/lib/cloudinary/listing-photo-url";
 import { formatDistance } from "@/lib/geo/distance";
@@ -44,57 +45,65 @@ export function ListingCard({
     >
       <Link
         href={href}
-        className={cn(
-          "group flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition-all hover:-translate-y-0.5 hover:border-foreground hover:shadow-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-          active && "-translate-y-0.5 border-foreground shadow-lg",
-        )}
+        className="group flex h-full flex-col gap-3 rounded-2xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:outline-none"
       >
-        <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+        <div
+          className={cn(
+            "aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted transition-shadow",
+            active && "ring-2 ring-foreground ring-offset-2",
+          )}
+        >
           {listing.coverUrl ? (
             // O Cloudinary já entrega a foto cortada e otimizada
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={listingPhotoThumbnailUrl(listing.coverUrl, 480, 360)}
+              src={listingPhotoThumbnailUrl(listing.coverUrl, 600, 450)}
               alt=""
               loading="lazy"
-              className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="flex size-full flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
-              <HouseIcon className="size-8 opacity-40" aria-hidden />
+            <div className="flex size-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-muted to-border/60 text-xs text-muted-foreground">
+              <Logo variant="symbol" className="h-10 opacity-15" />
               Sem fotos
             </div>
           )}
         </div>
 
-        <div className="flex flex-1 flex-col gap-1.5 p-4">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        <div className="flex flex-1 flex-col gap-1 px-1">
+          <p className="text-sm text-muted-foreground">
             {LISTING_TYPE_LABELS[listing.type]} · {listing.neighborhood},{" "}
             {listing.city}
           </p>
-          <Title className="line-clamp-2 font-sans text-base font-medium tracking-normal">
+          <Title className="line-clamp-1 font-sans text-base font-semibold tracking-normal">
             {listing.title}
           </Title>
-          <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3">
-            <p className="font-heading text-lg font-semibold">
-              {formatPrice(listing.priceCents)}
-              <span className="font-sans text-sm font-normal text-muted-foreground">
-                /mês
-              </span>
+          {listing.distanceMeters !== null && (
+            <p
+              className="text-sm text-muted-foreground"
+              title={
+                approximate
+                  ? "Distância aproximada: o ponto é o centro do bairro"
+                  : undefined
+              }
+            >
+              {approximate && "≈ "}
+              {formatDistance(listing.distanceMeters)} do campus
             </p>
-            {listing.distanceMeters !== null && (
-              <p
-                className="rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground"
-                title={
-                  approximate
-                    ? "Distância aproximada: o ponto é o centro do bairro"
-                    : undefined
-                }
-              >
-                {approximate && "≈ "}
-                {formatDistance(listing.distanceMeters)} do campus
-              </p>
-            )}
+          )}
+          <div className="mt-auto flex items-center justify-between gap-3 pt-2">
+            <p>
+              <span className="font-heading text-lg font-semibold">
+                {formatPrice(listing.priceCents)}
+              </span>
+              <span className="text-sm text-muted-foreground">/mês</span>
+            </p>
+            <span
+              aria-hidden
+              className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:translate-x-0.5"
+            >
+              <ArrowRightIcon className="size-4" />
+            </span>
           </div>
         </div>
       </Link>

@@ -113,7 +113,9 @@ sozinho.
   `LazyListingMap` e `LazySearchMap`, com `ssr: false`). Cores, tiles e
   enquadramento comuns em `map-parts.tsx`. O mapa da busca (`search-map.tsx`,
   usado por `src/app/busca/results-map.tsx`) mostra só os anúncios da página
-  atual; nos E2E os marcadores são `path.search-map-listing`. Marcadores em `CircleMarker`, sem o
+  atual, como etiquetas de preço (`divIcon` com a classe `search-map-listing`,
+  `is-active` no destacado; estilo em `globals.css`). Em tela larga fica numa
+  coluna fixa à direita da lista. Marcadores em `CircleMarker`, sem o
   ícone padrão do Leaflet (as imagens dele não vêm com o bundler). Nos E2E os
   tiles do OSM são bloqueados com `context.route`.
 - Ações sobre um anúncio (fotos, editar, pausar, excluir): começar com
@@ -190,7 +192,12 @@ sozinho.
   (`bg-card`, `rounded-2xl border`). Títulos (`h1` a `h3`) em Poppins
   (`font-heading`); botões em pílula (`buttonVariants`). Logo: componente
   `Logo` (`src/components/logo.tsx`, variantes `horizontal` e `symbol`,
-  `inverted` em fundo escuro); os arquivos em `public/brand/` e o favicon
+  `inverted` em fundo escuro); fotos do layout (página inicial) em
+  `public/images/` (WebP; os originais ficam fora do git, em `imgslayout/`),
+  sempre com `next/image`. Layout inspirado no Airbnb: busca em pílula no topo
+  da página inicial (`src/app/hero-search.tsx`), categorias de tipo de vaga na
+  busca (`type-chips.tsx`), cards sem moldura e página do anúncio com mosaico
+  de fotos, cartão de contato fixo e barra de preço no celular. Os arquivos em `public/brand/` e o favicon
   (`src/app/icon.svg`) são gerados por `node scripts/build-logo.mjs` a partir
   de `public/brand/uniteto-logo.svg`.
 - Feedback de ações (salvou, enviou, saiu): toast do `sonner`

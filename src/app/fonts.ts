@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Poppins } from "next/font/google";
+import { Caveat, Geist, Geist_Mono, Poppins } from "next/font/google";
 
 // Fontes do site, usadas pelo layout e pela página de erro global (que
 // substitui o layout e precisa carregar as próprias fontes)
@@ -19,5 +19,12 @@ const poppins = Poppins({
   weight: ["500", "600", "700"],
 });
 
+// Manuscrita, só em frases curtas de destaque ("Juntos na sua jornada.")
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["600"],
+});
+
 /** Classes do <html> com as variáveis das fontes. */
-export const fontVariables = `${geistSans.variable} ${geistMono.variable} ${poppins.variable}`;
+export const fontVariables = `${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${caveat.variable}`;

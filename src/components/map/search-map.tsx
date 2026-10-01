@@ -1,11 +1,13 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
+import { divIcon } from "leaflet";
 import Link from "next/link";
 import {
   Circle,
   CircleMarker,
   MapContainer,
+  Marker,
   Popup,
   Tooltip,
 } from "react-leaflet";
@@ -28,12 +30,25 @@ export type SearchMapListing = {
   distance: string | null;
   latitude: number;
   longitude: number;
+  /** Ex: "R$ 650" (etiqueta do marcador) */
+  shortPrice: string;
   /** Raio em metros da área desenhada quando o ponto é aproximado (0 = não desenha) */
   approximateRadius: number;
 };
 
-// Contorno do marcador em destaque (mouse sobre ele ou sobre o card)
-const ACTIVE_COLOR = "#450a0a";
+/**
+ * Marcador em forma de etiqueta com o preço (HTML, sem as imagens do ícone
+ * padrão do Leaflet). Em destaque fica preto; a classe `is-active` marca isso
+ * para os testes. O preço vem de `formatPriceShort`: só dígitos e "R$".
+ */
+function priceIcon(price: string, active: boolean) {
+  return divIcon({
+    className: "",
+    html: `<span class="search-map-listing${active ? " is-active" : ""}">${price}</span>`,
+    iconSize: [0, 0],
+    popupAnchor: [0, -16],
+  });
+}
 
 // Metros por grau de latitude (aproximação boa o bastante para enquadrar)
 const METERS_PER_DEGREE = 111_320;
@@ -125,18 +140,13 @@ export default function SearchMap({
       )}
 
       {listings.map((listing) => (
-        <CircleMarker
+        <Marker
           key={listing.id}
-          center={[listing.latitude, listing.longitude]}
-          // Em destaque: maior e com contorno escuro
-          radius={listing.id === activeId ? 12 : 8}
-          pathOptions={{
-            color: listing.id === activeId ? ACTIVE_COLOR : LISTING_COLOR,
-            fillColor: LISTING_COLOR,
-            weight: listing.id === activeId ? 4 : 3,
-            fillOpacity: listing.id === activeId ? 1 : 0.8,
-            className: "search-map-listing",
-          }}
+          position={[listing.latitude, listing.longitude]}
+          icon={priceIcon(listing.shortPrice, listing.id === activeId)}
+          // O destacado fica por cima dos vizinhos
+          zIndexOffset={listing.id === activeId ? 1000 : 0}
+          title={listing.title}
           eventHandlers={{
             mouseover: () => onActiveChange(listing.id),
             mouseout: () => onActiveChange(null),
@@ -157,7 +167,7 @@ export default function SearchMap({
               </Link>
             </div>
           </Popup>
-        </CircleMarker>
+        </Marker>
       ))}
 
       {campus && (

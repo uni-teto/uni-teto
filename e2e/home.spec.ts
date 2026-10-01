@@ -8,7 +8,9 @@ test("página inicial carrega com os campi do seed", async ({ page }) => {
     "moradia perto do seu campus",
   );
   await expect(
-    page.getByText("UFPI · Campus Ministro Petrônio Portella"),
+    page
+      .getByRole("region", { name: "Campi atendidos" })
+      .getByText("UFPI · Campus Ministro Petrônio Portella"),
   ).toBeVisible();
 });
 

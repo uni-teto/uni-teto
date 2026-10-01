@@ -42,7 +42,9 @@ test("visitante vê o anúncio e o mapa, mas não o contato", async ({
   expect(response?.status()).toBe(200);
 
   await expect(visitor.getByRole("heading", { name: TITLE })).toBeVisible();
-  await expect(visitor.getByText(/R\$\s750,00/)).toBeVisible();
+  await expect(
+    visitor.getByRole("complementary").getByText(/R\$\s750,00/),
+  ).toBeVisible();
   await expect(visitor.getByText("2 vagas disponíveis")).toBeVisible();
   await expect(
     visitor.getByText(/Rua Desembargador Pires de Castro, 1100/),

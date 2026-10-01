@@ -1,4 +1,12 @@
-import { ArrowRightIcon, MapPinIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  BuildingIcon,
+  GraduationCapIcon,
+  MapIcon,
+  MapPinIcon,
+  ShieldCheckIcon,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { buttonVariants } from "@/components/ui/button";
@@ -8,9 +16,18 @@ import { prisma } from "@/lib/prisma";
 import { NO_FILTERS, searchUrl } from "@/lib/search/search-filters";
 import { searchListings } from "@/lib/search/search-listings";
 import { ListingCard } from "./busca/listing-card";
+import { HeroSearch } from "./hero-search";
 
 // Anúncios em destaque na página inicial
 const FEATURED_LISTINGS = 6;
+
+// O que o UniTeto faz de fato (sem promessa de recurso que não existe)
+const highlights = [
+  { icon: GraduationCapIcon, text: "Distância real até o campus" },
+  { icon: ShieldCheckIcon, text: "Contato só para estudantes" },
+  { icon: MapIcon, text: "Busca no mapa" },
+  { icon: BuildingIcon, text: "Quartos, repúblicas e quitinetes" },
+];
 
 const steps = [
   {
@@ -60,6 +77,8 @@ export default async function Home() {
   ]);
   const role = session?.user.role;
   const hero = role ? HERO[role] : HERO.visitor;
+  const campusLabel = (c: (typeof campuses)[number]) =>
+    `${c.university.acronym} · ${c.name}`;
 
   // Destaques: para o estudante, os mais perto do campus da universidade
   // dele; para os outros, os mais recentes (as mesmas regras da busca)
@@ -72,109 +91,123 @@ export default async function Home() {
 
   return (
     <main className="flex-1">
-      <section className="border-b bg-background">
-        <div className="mx-auto grid max-w-5xl items-center gap-10 px-4 py-14 sm:py-20 lg:grid-cols-[1fr_auto]">
-          <div className="flex flex-col items-start gap-6">
-            <h1 className="max-w-xl text-4xl leading-[1.1] font-bold text-balance sm:text-5xl lg:text-6xl">
+      {/* Topo: texto e busca à esquerda, foto com corte diagonal à direita */}
+      <section className="mx-auto max-w-6xl px-4 pt-6">
+        <div className="relative overflow-hidden rounded-3xl border bg-card shadow-sm">
+          <div className="relative h-56 sm:h-72 lg:absolute lg:inset-y-0 lg:right-0 lg:h-auto lg:w-[46%] lg:[clip-path:polygon(14%_0,100%_0,100%_100%,0_100%)]">
+            <Image
+              src="/images/quarto-estudante.webp"
+              alt="Quarto de estudante com cama, escrivaninha e janela para a cidade"
+              fill
+              preload
+              sizes="(min-width: 1024px) 600px, 100vw"
+              className="object-cover"
+            />
+          </div>
+
+          <div className="relative flex flex-col items-start gap-6 p-6 sm:p-10 lg:w-[56%] lg:py-16">
+            <p className="text-xs font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+              Moradia para quem estuda
+            </p>
+            <h1 className="max-w-lg text-4xl leading-[1.08] font-bold text-balance sm:text-5xl">
               {hero.title}
             </h1>
-            <p className="max-w-xl text-lg text-pretty text-muted-foreground">
+            <p className="max-w-md text-lg text-pretty text-muted-foreground">
               {hero.text}
             </p>
 
-            <div className="flex flex-wrap gap-3">
-              {role === "ANUNCIANTE" ? (
+            {role === "ANUNCIANTE" ? (
+              <div className="flex flex-wrap gap-3">
                 <Link
                   href={NEW_LISTING_PATH}
                   className={buttonVariants({ size: "lg" })}
                 >
                   Criar anúncio
                 </Link>
-              ) : (
-                <Link
-                  href={SEARCH_PATH}
-                  className={buttonVariants({ size: "lg" })}
-                >
-                  Buscar moradia
-                  <ArrowRightIcon aria-hidden />
-                </Link>
-              )}
-              {session ? (
                 <Link
                   href="/perfil"
                   className={buttonVariants({ size: "lg", variant: "outline" })}
                 >
                   Completar meu perfil
                 </Link>
-              ) : (
-                <Link
-                  href="/login"
-                  className={buttonVariants({ size: "lg", variant: "outline" })}
-                >
-                  Já tenho conta
-                </Link>
-              )}
-            </div>
-
-            {/* Cada campus leva à busca já ordenada pela distância até ele */}
-            {campuses.length > 0 && (
-              <div className="w-full">
-                <h2 className="mb-3 font-sans text-sm font-medium tracking-normal text-muted-foreground">
-                  Campi atendidos
-                </h2>
-                <ul className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                  {campuses.map((campus) => (
-                    <li key={campus.id}>
-                      <Link
-                        href={`${SEARCH_PATH}?campus=${encodeURIComponent(campus.id)}`}
-                        className="flex items-center gap-2 rounded-full border border-input bg-background py-2 pr-4 pl-3 text-sm transition-colors hover:border-foreground"
-                      >
-                        <MapPinIcon className="size-4 shrink-0" aria-hidden />
-                        <span className="font-medium">
-                          {campus.university.acronym} · {campus.name}
-                        </span>
-                        <span className="sr-only">
-                          , {campus.city}, {campus.state}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
               </div>
+            ) : (
+              <HeroSearch
+                campuses={campuses.map((c) => ({
+                  id: c.id,
+                  label: campusLabel(c),
+                }))}
+                defaultCampusId={ownCampus?.id ?? null}
+              />
             )}
-          </div>
 
-          {/* Símbolo da marca, só decorativo em telas largas */}
-          <div
-            aria-hidden
-            className="hidden size-72 items-center justify-center rounded-[3rem] bg-primary lg:flex"
-          >
-            <Logo variant="symbol" inverted className="h-36" />
+            <ul className="grid w-full max-w-xl grid-cols-2 gap-x-4 gap-y-3 pt-2 sm:grid-cols-4 lg:grid-cols-2">
+              {highlights.map(({ icon: Icon, text }) => (
+                <li key={text} className="flex items-center gap-2 text-xs">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full border">
+                    <Icon className="size-4" aria-hidden />
+                  </span>
+                  {text}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
 
+      {/* Cada campus leva à busca já ordenada pela distância até ele */}
+      {campuses.length > 0 && (
+        <section
+          aria-labelledby="campi"
+          className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 pt-6"
+        >
+          <h2
+            id="campi"
+            className="font-sans text-sm font-medium tracking-normal text-muted-foreground"
+          >
+            Campi atendidos
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {campuses.map((campus) => (
+              <li key={campus.id}>
+                <Link
+                  href={`${SEARCH_PATH}?campus=${encodeURIComponent(campus.id)}`}
+                  className="flex items-center gap-2 rounded-full border bg-card py-1.5 pr-4 pl-3 text-sm transition-colors hover:border-foreground"
+                >
+                  <MapPinIcon className="size-4 shrink-0" aria-hidden />
+                  <span className="font-medium">{campusLabel(campus)}</span>
+                  <span className="sr-only">
+                    , {campus.city}, {campus.state}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {featured.items.length > 0 && (
         <section
           aria-labelledby="destaques"
-          className="mx-auto max-w-5xl px-4 pt-14"
+          className="mx-auto max-w-6xl px-4 pt-14"
         >
           <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2">
             <h2 id="destaques" className="text-2xl font-semibold">
               {ownCampus
-                ? `Perto de ${ownCampus.university.acronym} · ${ownCampus.name}`
+                ? `Perto de ${campusLabel(ownCampus)}`
                 : "Anúncios recentes"}
             </h2>
             <Link
               href={searchUrl(featuredFilters)}
-              className="text-sm font-medium underline underline-offset-4"
+              className="flex items-center gap-1 text-sm font-medium hover:underline"
             >
               {featured.total === 1
                 ? "Ver na busca"
                 : `Ver os ${featured.total} anúncios`}
+              <ArrowRightIcon className="size-4" aria-hidden />
             </Link>
           </div>
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
             {featured.items.map((listing) => (
               <ListingCard
                 key={listing.id}
@@ -187,7 +220,39 @@ export default async function Home() {
         </section>
       )}
 
-      <section className="mx-auto max-w-5xl px-4 py-14">
+      {/* Mais que moradia: foto com corte diagonal e texto */}
+      <section className="mx-auto max-w-6xl px-4 pt-16">
+        <div className="grid overflow-hidden rounded-3xl border bg-card shadow-sm md:grid-cols-2">
+          <div className="relative h-56 md:h-auto md:min-h-80 md:[clip-path:polygon(0_0,100%_0,82%_100%,0_100%)]">
+            <Image
+              src="/images/republica.webp"
+              alt="Quarto de república com duas camas altas e escrivaninhas embaixo"
+              fill
+              sizes="(min-width: 768px) 560px, 100vw"
+              className="object-cover"
+            />
+          </div>
+          <div className="flex flex-col justify-center gap-4 p-6 sm:p-10">
+            <p className="text-xs font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+              Mais que moradia
+            </p>
+            <h2 className="text-3xl font-semibold text-balance">
+              É sobre a sua jornada.
+            </h2>
+            <p className="text-muted-foreground">
+              Morar perto do campus é ganhar tempo para estudar, descansar e
+              aproveitar a universidade. O UniTeto mostra a distância de verdade
+              até a sua faculdade, para você escolher com calma.
+            </p>
+            <p className="flex items-center gap-3 pt-2 font-hand text-3xl">
+              Juntos na sua jornada.
+              <Logo variant="symbol" className="h-7" />
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="mb-6 text-2xl font-semibold">Como funciona</h2>
         <ol className="grid gap-4 sm:grid-cols-3">
           {steps.map(({ title, text }, index) => (
@@ -207,30 +272,37 @@ export default async function Home() {
 
       {/* Quem já é anunciante tem o "Criar anúncio" no topo */}
       {role !== "ANUNCIANTE" && (
-        <section className="mx-auto max-w-5xl px-4 pb-16">
-          <div className="flex flex-col items-start gap-6 rounded-3xl bg-primary p-8 text-primary-foreground sm:flex-row sm:items-center sm:justify-between sm:p-10">
-            <div>
-              <h2 className="text-2xl font-semibold">
-                {role === "ESTUDANTE"
-                  ? "Abriu uma vaga na sua república?"
-                  : "Tem um quarto ou quitinete para alugar?"}
-              </h2>
-              <p className="mt-2 max-w-lg text-primary-foreground/75">
-                Publique de graça. Seu anúncio aparece para universitários com a
-                distância até o campus, e só estudantes verificados veem o seu
-                contato.
-              </p>
+        <section className="mx-auto max-w-6xl px-4 pb-16">
+          <div className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground">
+            <div className="absolute inset-y-0 right-0 hidden w-2/5 md:block md:[clip-path:polygon(25%_0,100%_0,100%_100%,0_100%)]">
+              <Image
+                src="/images/quitinete.webp"
+                alt=""
+                fill
+                sizes="450px"
+                className="object-cover opacity-80"
+              />
             </div>
-            <Link
-              href={session ? NEW_LISTING_PATH : "/cadastro?papel=anunciante"}
-              className={buttonVariants({
-                size: "lg",
-                variant: "secondary",
-                className: "shrink-0",
-              })}
-            >
-              {session ? "Publicar um anúncio" : "Quero anunciar"}
-            </Link>
+            <div className="relative flex flex-col items-start gap-6 p-8 sm:p-10 md:w-3/5">
+              <div>
+                <h2 className="text-2xl font-semibold">
+                  {role === "ESTUDANTE"
+                    ? "Abriu uma vaga na sua república?"
+                    : "Tem um quarto ou quitinete para alugar?"}
+                </h2>
+                <p className="mt-2 max-w-lg text-primary-foreground/75">
+                  Publique de graça. Seu anúncio aparece para universitários com
+                  a distância até o campus, e só estudantes verificados veem o
+                  seu contato.
+                </p>
+              </div>
+              <Link
+                href={session ? NEW_LISTING_PATH : "/cadastro?papel=anunciante"}
+                className={buttonVariants({ size: "lg", variant: "secondary" })}
+              >
+                {session ? "Publicar um anúncio" : "Quero anunciar"}
+              </Link>
+            </div>
           </div>
         </section>
       )}

@@ -54,3 +54,6 @@ src/generated/
 # Playwright
 playwright-report/
 test-results/
+
+# Imagens originais do layout (as usadas no site, otimizadas, ficam em public/images)
+/imgslayout/

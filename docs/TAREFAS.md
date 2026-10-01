@@ -144,6 +144,12 @@ preta e some em fundo escuro); repaginada em todas as telas.
       funciona" numerado e faixa para quem quer anunciar
 - [x] Cards de anúncio, busca, página do anúncio, formulários, perfil, Meus
       anúncios e páginas de erro no mesmo padrão
+- [x] Layout inspirado no Airbnb e na referência da dupla (01/10/2026):
+      topo com foto e busca em pílula, categorias de tipo de vaga, busca com
+      lista e mapa lado a lado e marcadores com o preço, cards sem moldura,
+      seção "É sobre a sua jornada" e página do anúncio com mosaico de fotos
+      e cartão de contato fixo. Fora (não existe no sistema): favoritos,
+      mensagens, reservas, aplicativo e depoimentos
 
 ## Fase 6 — Qualidade e entrega
 

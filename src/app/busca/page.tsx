@@ -6,7 +6,7 @@ import { listingPath } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
 import { formatDistance } from "@/lib/geo/distance";
 import { APPROXIMATE_RADIUS_METERS } from "@/lib/listings/location-notice";
-import { formatPrice } from "@/lib/listings/price";
+import { formatPrice, formatPriceShort } from "@/lib/listings/price";
 import { prisma } from "@/lib/prisma";
 import {
   NO_CAMPUS,
@@ -16,6 +16,7 @@ import {
   searchUrl,
 } from "@/lib/search/search-filters";
 import { searchListings } from "@/lib/search/search-listings";
+import { TypeChips } from "./type-chips";
 import { ListingCard } from "./listing-card";
 import { ResultsMap } from "./results-map";
 import { SearchForm } from "./search-form";
@@ -104,7 +105,7 @@ export default async function SearchPage({
         : "dos mais recentes para os mais antigos";
 
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
+    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
       <SearchUiProvider>
         <h1 className="text-3xl font-semibold text-balance">
           {campus
@@ -142,104 +143,111 @@ export default async function SearchPage({
           )}
         </FiltersPanel>
 
-        <ResultsRegion>
-          {/* Sem campus e sem anúncios não há o que mostrar no mapa */}
-          {(campus || result.items.length > 0) && (
-            <ResultsMap
-              campus={
-                campus && {
-                  name: campusLabel(campus),
-                  latitude: campus.latitude,
-                  longitude: campus.longitude,
-                }
-              }
-              radiusMeters={filters.radiusKm ? filters.radiusKm * 1000 : null}
-              listings={result.items.map((listing) => ({
-                id: listing.id,
-                title: listing.title,
-                href: listingPath(listing.id, filters.campusId),
-                price: `${formatPrice(listing.priceCents)}/mês`,
-                distance:
-                  listing.distanceMeters === null
-                    ? null
-                    : `${formatDistance(listing.distanceMeters)} do campus`,
-                latitude: listing.latitude,
-                longitude: listing.longitude,
-                // "rua" é o comum em Teresina: só o centro do bairro vira área
-                approximateRadius:
-                  listing.locationPrecision === "bairro"
-                    ? APPROXIMATE_RADIUS_METERS.bairro
-                    : 0,
-              }))}
-            />
-          )}
+        <TypeChips filters={urlFilters} />
 
-          {result.items.length === 0 ? (
-            <div className="mt-8 flex flex-col items-center gap-4 rounded-2xl border border-dashed bg-card px-4 py-16 text-center">
-              <SearchXIcon
-                className="size-8 text-muted-foreground"
-                aria-hidden
+        <ResultsRegion>
+          <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-start lg:gap-8">
+            {/* Sem campus e sem anúncios não há o que mostrar no mapa */}
+            {(campus || result.items.length > 0) && (
+              <ResultsMap
+                campus={
+                  campus && {
+                    name: campusLabel(campus),
+                    latitude: campus.latitude,
+                    longitude: campus.longitude,
+                  }
+                }
+                radiusMeters={filters.radiusKm ? filters.radiusKm * 1000 : null}
+                listings={result.items.map((listing) => ({
+                  id: listing.id,
+                  title: listing.title,
+                  href: listingPath(listing.id, filters.campusId),
+                  price: `${formatPrice(listing.priceCents)}/mês`,
+                  shortPrice: formatPriceShort(listing.priceCents),
+                  distance:
+                    listing.distanceMeters === null
+                      ? null
+                      : `${formatDistance(listing.distanceMeters)} do campus`,
+                  latitude: listing.latitude,
+                  longitude: listing.longitude,
+                  // "rua" é o comum em Teresina: só o centro do bairro vira área
+                  approximateRadius:
+                    listing.locationPrecision === "bairro"
+                      ? APPROXIMATE_RADIUS_METERS.bairro
+                      : 0,
+                }))}
               />
-              <div>
-                <p className="font-medium">Nenhum anúncio encontrado</p>
-                <p className="text-sm text-muted-foreground">
-                  {hasFilters
-                    ? "Tente aumentar a distância ou a faixa de preço."
-                    : "Ainda não há anúncios publicados. Volte em breve."}
-                </p>
-              </div>
-              {hasFilters && (
-                <SearchLink
-                  href={searchUrl({
-                    ...urlFilters,
-                    radiusKm: null,
-                    minPriceCents: null,
-                    maxPriceCents: null,
-                    type: null,
-                    page: 1,
-                  })}
-                  className={buttonVariants({ variant: "outline" })}
+            )}
+
+            <div className="lg:col-start-1 lg:row-start-1">
+              {result.items.length === 0 ? (
+                <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed bg-card px-4 py-16 text-center">
+                  <SearchXIcon
+                    className="size-8 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <div>
+                    <p className="font-medium">Nenhum anúncio encontrado</p>
+                    <p className="text-sm text-muted-foreground">
+                      {hasFilters
+                        ? "Tente aumentar a distância ou a faixa de preço."
+                        : "Ainda não há anúncios publicados. Volte em breve."}
+                    </p>
+                  </div>
+                  {hasFilters && (
+                    <SearchLink
+                      href={searchUrl({
+                        ...urlFilters,
+                        radiusKm: null,
+                        minPriceCents: null,
+                        maxPriceCents: null,
+                        type: null,
+                        page: 1,
+                      })}
+                      className={buttonVariants({ variant: "outline" })}
+                    >
+                      Limpar filtros
+                    </SearchLink>
+                  )}
+                </div>
+              ) : (
+                <ul className="mt-6 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:mt-0">
+                  {result.items.map((listing) => (
+                    <ListingCard
+                      key={listing.id}
+                      listing={listing}
+                      campusId={filters.campusId}
+                    />
+                  ))}
+                </ul>
+              )}
+
+              {result.pageCount > 1 && (
+                <nav
+                  aria-label="Paginação"
+                  className="mt-8 flex items-center justify-center gap-4 text-sm"
                 >
-                  Limpar filtros
-                </SearchLink>
+                  <PageLink
+                    filters={urlFilters}
+                    page={filters.page - 1}
+                    enabled={filters.page > 1}
+                  >
+                    Anterior
+                  </PageLink>
+                  <span className="text-muted-foreground">
+                    Página {filters.page} de {result.pageCount}
+                  </span>
+                  <PageLink
+                    filters={urlFilters}
+                    page={filters.page + 1}
+                    enabled={filters.page < result.pageCount}
+                  >
+                    Próxima
+                  </PageLink>
+                </nav>
               )}
             </div>
-          ) : (
-            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {result.items.map((listing) => (
-                <ListingCard
-                  key={listing.id}
-                  listing={listing}
-                  campusId={filters.campusId}
-                />
-              ))}
-            </ul>
-          )}
-
-          {result.pageCount > 1 && (
-            <nav
-              aria-label="Paginação"
-              className="mt-8 flex items-center justify-center gap-4 text-sm"
-            >
-              <PageLink
-                filters={urlFilters}
-                page={filters.page - 1}
-                enabled={filters.page > 1}
-              >
-                Anterior
-              </PageLink>
-              <span className="text-muted-foreground">
-                Página {filters.page} de {result.pageCount}
-              </span>
-              <PageLink
-                filters={urlFilters}
-                page={filters.page + 1}
-                enabled={filters.page < result.pageCount}
-              >
-                Próxima
-              </PageLink>
-            </nav>
-          )}
+          </div>
         </ResultsRegion>
       </SearchUiProvider>
     </main>

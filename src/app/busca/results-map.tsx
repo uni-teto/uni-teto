@@ -44,7 +44,11 @@ export function ResultsMap({
   const visible = wide || open;
 
   return (
-    <section aria-label="Mapa dos resultados" className="mt-6">
+    <section
+      aria-label="Mapa dos resultados"
+      // Em tela larga fica à direita da lista e acompanha a rolagem
+      className="lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1"
+    >
       <Button
         type="button"
         variant="outline"
@@ -56,7 +60,7 @@ export function ResultsMap({
         {open ? "Esconder mapa" : "Ver no mapa"}
       </Button>
       {visible && (
-        <div className="mt-3 h-80 overflow-hidden rounded-2xl border sm:mt-0 sm:h-96">
+        <div className="mt-3 h-80 overflow-hidden rounded-2xl border sm:mt-0 sm:h-96 lg:h-[calc(100vh-8rem)]">
           <LazySearchMap
             campus={campus}
             radiusMeters={radiusMeters}
