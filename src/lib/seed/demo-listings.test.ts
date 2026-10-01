@@ -4,7 +4,12 @@ import { listingSchema } from "@/lib/listings/listing-schema";
 import { LISTING_TYPES } from "@/lib/listings/listing-types";
 import { formatPrice } from "@/lib/listings/price";
 import { stateForZipCode } from "@/lib/listings/zip-code";
-import { DEMO_EMAIL_DOMAIN, demoListings, demoOwners } from "./demo-listings";
+import {
+  DEMO_EMAIL_DOMAIN,
+  demoListingPhotos,
+  demoListings,
+  demoOwners,
+} from "./demo-listings";
 import { universities } from "./universities";
 
 describe("dados do seed de demonstração", () => {
@@ -79,5 +84,41 @@ describe("dados do seed de demonstração", () => {
     expect(active.some((l) => l.locationPrecision === "rua")).toBe(true);
     expect(active.some((l) => l.locationPrecision === "bairro")).toBe(true);
     expect(demoListings.some((l) => l.status === "PAUSADO")).toBe(true);
+  });
+});
+
+describe("fotos do seed de demonstração", () => {
+  it("dá três fotos diferentes a cada anúncio, com a capa na posição 0", () => {
+    for (const listing of demoListings) {
+      const photos = demoListingPhotos.filter(
+        (p) => p.listingId === listing.id,
+      );
+      expect(
+        photos.map((p) => p.position),
+        listing.id,
+      ).toEqual([0, 1, 2]);
+      expect(new Set(photos.map((p) => p.url)).size, listing.id).toBe(3);
+    }
+    const ids = demoListingPhotos.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("usa só fotos da pasta de demonstração no Cloudinary", () => {
+    for (const { url } of demoListingPhotos) {
+      expect(url).toMatch(
+        /^https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/v\d+\/uniteto\/demo\/[a-z-]+\.jpg$/,
+      );
+    }
+  });
+
+  it("abre república com o quarto de beliches", () => {
+    for (const listing of demoListings.filter(
+      (l) => l.type === "VAGA_REPUBLICA",
+    )) {
+      const cover = demoListingPhotos.find(
+        (p) => p.listingId === listing.id && p.position === 0,
+      )!;
+      expect(cover.url, listing.id).toMatch(/\/uniteto\/demo\/republica/);
+    }
   });
 });

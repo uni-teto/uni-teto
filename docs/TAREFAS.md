@@ -150,6 +150,9 @@ preta e some em fundo escuro); repaginada em todas as telas.
       seção "É sobre a sua jornada" e página do anúncio com mosaico de fotos
       e cartão de contato fixo. Fora (não existe no sistema): favoritos,
       mensagens, reservas, aplicativo e depoimentos
+- [x] Fotos nos anúncios de demonstração: 18 imagens geradas por IA, três por
+      anúncio, no Cloudinary (`uniteto/demo/`). Funcionam em qualquer máquina
+      com `npm run db:seed-demo`
 
 ## Fase 6 — Qualidade e entrega
 

@@ -11,11 +11,15 @@
  *   `uniteto.example`, reservado para exemplos: o e-mail não chega a ninguém.
  *   Ficam sem WhatsApp, para o link não apontar para o telefone de alguém.
  *
+ * - Fotos: geradas por IA, no Cloudinary em `uniteto/demo/` (endereços em
+ *   ./demo-photos.ts). Três por anúncio, combinando a capa com o tipo de vaga.
+ *
  * Os `id`s são fixos para o seed poder rodar várias vezes sem duplicar.
  */
 import type { GeocodePrecision } from "@/lib/geo/geocode";
 import type { StateCode } from "@/lib/geo/states";
 import type { ListingType } from "@/lib/listings/listing-types";
+import { DEMO_PHOTO_URLS, type DemoPhoto } from "./demo-photos";
 
 export const DEMO_EMAIL_DOMAIN = "uniteto.example";
 
@@ -219,4 +223,66 @@ export const demoListings: DemoListing[] = ROWS.map(
       createdAt: new Date(FIRST_DAY + index * DAY_MS),
     };
   },
+);
+
+// ---- Fotos (enviadas por `npm run cloudinary:demo-photos`)
+
+const BEDROOMS: DemoPhoto[] = ["quarto-estudante", "republica-noite"];
+const REPUBLICS: DemoPhoto[] = ["republica", "republica-noite"];
+const APARTMENTS: DemoPhoto[] = [
+  "ap-terroso",
+  "ap-oliva",
+  "ap-verde-oliva",
+  "ap-plantas-luz",
+  "ap-varanda",
+  "ap-vista",
+  "ap-cozinha-sala",
+  "ap-cozinha-integrada",
+  "ap-escandinavo",
+  "ap-luz-natural",
+  "ap-verde-madeira",
+  "ap-por-do-sol",
+  "ap-cozinha-jantar",
+  "estudio",
+  "loft",
+];
+
+/** Item `n` de uma lista, dando a volta quando acaba. */
+const pick = <T>(list: T[], n: number) => list[n % list.length];
+
+/**
+ * Três fotos por anúncio, sem repetir dentro dele. A capa combina com o tipo:
+ * república abre com o quarto de beliches; quitinete, com o apartamento;
+ * quarto, com o apartamento e o quarto em seguida. As demais giram entre as
+ * fotos de apartamento, para os anúncios vizinhos não ficarem iguais.
+ */
+function photosFor(type: ListingType, index: number): DemoPhoto[] {
+  const a = pick(APARTMENTS, index * 2);
+  const b = pick(APARTMENTS, index * 2 + 1);
+  switch (type) {
+    case "VAGA_REPUBLICA":
+      return [pick(REPUBLICS, index), a, b];
+    case "QUARTO":
+      return [a, pick(BEDROOMS, index), b];
+    case "QUITINETE":
+      return [a, b, pick(APARTMENTS, index * 2 + 7)];
+  }
+}
+
+export type DemoListingPhoto = {
+  id: string;
+  listingId: string;
+  url: string;
+  /** 0 é a capa */
+  position: number;
+};
+
+export const demoListingPhotos: DemoListingPhoto[] = demoListings.flatMap(
+  (listing, index) =>
+    photosFor(listing.type, index).map((photo, position) => ({
+      id: `${listing.id}-photo-${position}`,
+      listingId: listing.id,
+      url: DEMO_PHOTO_URLS[photo],
+      position,
+    })),
 );

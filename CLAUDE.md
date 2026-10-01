@@ -151,6 +151,11 @@ sozinho.
   dados em `src/lib/seed/demo-listings.ts` (ruas e CEPs reais, imóveis
   fictícios, donos sem senha em `uniteto.example`). Grava direto no banco, sem
   Nominatim; para acrescentar, geocodifique a rua antes e copie o resultado.
+  Fotos (geradas por IA): 3 por anúncio, no Cloudinary em `uniteto/demo/`
+  (fora do `cloudinary:cleanup`), com os endereços em
+  `src/lib/seed/demo-photos.ts`; outras máquinas usam os mesmos endereços.
+  Para trocar as fotos: `npm run cloudinary:demo-photos` (precisa dos
+  originais em `imgsanuncios/` e `imgslayout/`, fora do git).
 - Auth: config em `src/lib/auth/server.ts`, cliente em `src/lib/auth/client.ts`,
   rotas em `/api/auth/*`. Domínios permitidos = `University.emailDomain`; a
   checagem roda no hook `databaseHooks.user.create.before` (servidor).
