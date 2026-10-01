@@ -43,7 +43,8 @@ npm run db:migrate
 # 5. Cadastrar universidades e campi iniciais (pode rodar de novo sem duplicar)
 npm run db:seed
 
-# 6. (Opcional) Anúncios de demonstração, para ver a busca com dados
+# 6. (Opcional) Anúncios de demonstração, com fotos, para ver a busca com dados
+#    (as fotos já estão no Cloudinary: não precisa configurar nada)
 npm run db:seed-demo
 
 # 7. Rodar a aplicação em http://localhost:3000
@@ -51,6 +52,19 @@ npm run dev
 ```
 
 E-mails enviados em desenvolvimento aparecem no Mailpit: http://localhost:8025
+
+### Atualizar uma cópia que já roda
+
+Depois de um `git pull` com mudanças grandes (ex: o merge de uma fase):
+
+```bash
+npm install          # dependências novas
+npm run db:migrate   # migrations novas (se houver)
+npm run db:seed-demo # anúncios de demonstração atualizados, com as fotos
+```
+
+E reinicie o `npm run dev`. Se ele reclamar de um arquivo que não existe mais
+("Can't resolve"), apague a pasta `.next/dev` e suba de novo.
 
 ### Tudo no Docker (opcional)
 
@@ -111,7 +125,8 @@ Cloudinary. `npm run cloudinary:cleanup` lista as que nenhum anúncio ou perfil
 usa (com mais de 24 h) e `npm run cloudinary:cleanup -- --apply` apaga.
 **Rode só com o banco dono dessa conta do Cloudinary**: se duas pessoas usam
 as mesmas chaves com bancos locais diferentes, as fotos de uma parecem
-sobrando para a outra.
+sobrando para a outra. As fotos dos anúncios de demonstração (`uniteto/demo/`)
+nunca entram nessa limpeza.
 
 ### Windows: quebras de linha
 
