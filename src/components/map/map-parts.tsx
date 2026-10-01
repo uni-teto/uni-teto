@@ -37,14 +37,24 @@ export function FitPoints({
   useEffect(() => {
     const latLngs: [number, number][] = JSON.parse(key);
     if (latLngs.length === 0) return;
-    // O tamanho do mapa pode ter mudado depois de montado (coluna fixa da
-    // busca): sem isso o enquadramento usa o tamanho antigo
-    map.invalidateSize();
-    if (latLngs.length < 2) {
-      map.setView(latLngs[0], zoom);
-      return;
+
+    function fit() {
+      if (latLngs.length < 2) {
+        map.setView(latLngs[0], zoom);
+        return;
+      }
+      map.fitBounds(latLngBounds(latLngs), { padding: [32, 32], maxZoom: 16 });
     }
-    map.fitBounds(latLngBounds(latLngs), { padding: [32, 32], maxZoom: 16 });
+
+    // O mapa pode mudar de tamanho depois de montado (coluna fixa da busca,
+    // janela redimensionada): enquadra de novo quando isso acontece
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize();
+      fit();
+    });
+    observer.observe(map.getContainer());
+    fit();
+    return () => observer.disconnect();
   }, [map, key, zoom]);
 
   return null;

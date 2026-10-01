@@ -102,6 +102,8 @@ export default function SearchMap({
       center={points[0]}
       zoom={14}
       scrollWheelZoom={false}
+      // Zoom em passos menores: o raio escolhido preenche melhor o mapa
+      zoomSnap={0.25}
       className="z-0 size-full"
     >
       <FitPoints points={points} zoom={15} />
