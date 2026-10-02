@@ -43,7 +43,8 @@ npm run db:migrate
 # 5. Cadastrar universidades e campi iniciais (pode rodar de novo sem duplicar)
 npm run db:seed
 
-# 6. (Opcional) Anúncios de demonstração, para ver a busca com dados
+# 6. (Opcional) Anúncios de demonstração, com fotos, para ver a busca com dados
+#    (as fotos já estão no Cloudinary: não precisa configurar nada)
 npm run db:seed-demo
 
 # 7. Rodar a aplicação em http://localhost:3000
@@ -51,6 +52,19 @@ npm run dev
 ```
 
 E-mails enviados em desenvolvimento aparecem no Mailpit: http://localhost:8025
+
+### Atualizar uma cópia que já roda
+
+Depois de um `git pull` com mudanças grandes (ex: o merge de uma fase):
+
+```bash
+npm install          # dependências novas
+npm run db:migrate   # migrations novas (se houver)
+npm run db:seed-demo # anúncios de demonstração atualizados, com as fotos
+```
+
+E reinicie o `npm run dev`. Se ele reclamar de um arquivo que não existe mais
+("Can't resolve"), apague a pasta `.next/dev` e suba de novo.
 
 ### Tudo no Docker (opcional)
 
@@ -111,7 +125,8 @@ Cloudinary. `npm run cloudinary:cleanup` lista as que nenhum anúncio ou perfil
 usa (com mais de 24 h) e `npm run cloudinary:cleanup -- --apply` apaga.
 **Rode só com o banco dono dessa conta do Cloudinary**: se duas pessoas usam
 as mesmas chaves com bancos locais diferentes, as fotos de uma parecem
-sobrando para a outra.
+sobrando para a outra. As fotos dos anúncios de demonstração (`uniteto/demo/`)
+nunca entram nessa limpeza.
 
 ### Windows: quebras de linha
 
@@ -132,25 +147,26 @@ achar que todos os arquivos foram apagados (se acontecer, `git reset` resolve).
 
 ## Scripts
 
-| Comando                      | O que faz                                                                             |
-| ---------------------------- | ------------------------------------------------------------------------------------- |
-| `npm run dev`                | Servidor de desenvolvimento                                                           |
-| `npm run build`              | Build de produção                                                                     |
-| `npm run lint`               | ESLint                                                                                |
-| `npm run format`             | Formata o código com o Prettier                                                       |
-| `npm run format:check`       | Verifica a formatação (roda no CI)                                                    |
-| `npm run typecheck`          | Checagem de tipos do TypeScript                                                       |
-| `npm run test`               | Testes unitários (Vitest)                                                             |
-| `npm run test:watch`         | Vitest em modo watch                                                                  |
-| `npm run test:integration`   | Testes de integração com o banco (PostGIS); precisa do `docker compose up -d`         |
-| `npm run test:e2e`           | Testes ponta a ponta (Playwright). Na primeira vez: `npx playwright install chromium` |
-| `npm run db:migrate`         | Cria/aplica migrations e regenera o Prisma Client                                     |
-| `npm run db:seed`            | Cadastra universidades e campi iniciais (`src/lib/seed/`)                             |
-| `npm run db:seed-demo`       | Anúncios de demonstração para a busca (`-- --remove` apaga); ver `src/lib/seed/`      |
-| `npm run db:clean-e2e`       | Apaga as contas e anúncios criados pelos testes E2E (já roda no fim do `test:e2e`)    |
-| `npm run cloudinary:cleanup` | Lista as fotos do Cloudinary sem uso; com `-- --apply`, apaga                         |
-| `npm run db:generate`        | Regenera o Prisma Client                                                              |
-| `npm run db:studio`          | Abre o Prisma Studio para ver os dados                                                |
+| Comando                          | O que faz                                                                             |
+| -------------------------------- | ------------------------------------------------------------------------------------- |
+| `npm run dev`                    | Servidor de desenvolvimento                                                           |
+| `npm run build`                  | Build de produção                                                                     |
+| `npm run lint`                   | ESLint                                                                                |
+| `npm run format`                 | Formata o código com o Prettier                                                       |
+| `npm run format:check`           | Verifica a formatação (roda no CI)                                                    |
+| `npm run typecheck`              | Checagem de tipos do TypeScript                                                       |
+| `npm run test`                   | Testes unitários (Vitest)                                                             |
+| `npm run test:watch`             | Vitest em modo watch                                                                  |
+| `npm run test:integration`       | Testes de integração com o banco (PostGIS); precisa do `docker compose up -d`         |
+| `npm run test:e2e`               | Testes ponta a ponta (Playwright). Na primeira vez: `npx playwright install chromium` |
+| `npm run db:migrate`             | Cria/aplica migrations e regenera o Prisma Client                                     |
+| `npm run db:seed`                | Cadastra universidades e campi iniciais (`src/lib/seed/`)                             |
+| `npm run db:seed-demo`           | Anúncios de demonstração para a busca (`-- --remove` apaga); ver `src/lib/seed/`      |
+| `npm run db:clean-e2e`           | Apaga as contas e anúncios criados pelos testes E2E (já roda no fim do `test:e2e`)    |
+| `npm run cloudinary:demo-photos` | Reenvia as fotos dos anúncios de demonstração (só quem tem os originais)              |
+| `npm run cloudinary:cleanup`     | Lista as fotos do Cloudinary sem uso; com `-- --apply`, apaga                         |
+| `npm run db:generate`            | Regenera o Prisma Client                                                              |
+| `npm run db:studio`              | Abre o Prisma Studio para ver os dados                                                |
 
 ## Estrutura
 

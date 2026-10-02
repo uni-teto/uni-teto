@@ -55,8 +55,8 @@ papéis (#40):
 ## Fase 4 — Anúncios
 
 - [x] #40 Escolha de papel no cadastro (estudante ou anunciante). O
-      anunciante já entra em "Meus anúncios"; falta levar o estudante para a
-      busca quando ela existir (#28, `homeForRole` em `src/lib/auth/routes.ts`)
+      anunciante já entra em "Meus anúncios" e o estudante na busca
+      (`homeForRole` em `src/lib/auth/routes.ts`)
 - [x] #24 Criar anúncio (`/anuncios/novo`). Depois de publicar mostra um
       resumo com "Adicionar fotos" e "Ver meus anúncios"
 - [x] #25 Fotos do anúncio (`/anuncios/<id>/fotos`). E2E com Cloudinary falso
@@ -101,15 +101,58 @@ papéis (#40):
 - [x] #41 Consulta de busca com PostGIS e testes de integração — **o
       diferencial do TCC**; base das demais tarefas da fase. `searchListings` e
       os filtros da URL (`parseSearchFilters`) em `src/lib/search/`
-- [ ] #28 Listagem pública com paginação
-- [ ] #29 Filtro por distância até o campus (campus do estudante pré-selecionado)
-- [ ] #30 Filtros de preço e tipo de vaga
-- [ ] #31 Mapa com Leaflet + OpenStreetMap (o Leaflet já entrou na #27:
-      `src/components/map/`)
+- [x] #28 Listagem pública com paginação (`/busca`): cards com capa, preço,
+      tipo e distância, campus escolhido por links (o seletor com raio é a
+      #29), estado vazio e filtros na URL. O estudante cai nela ao entrar
+- [x] #29 Filtro por distância até o campus: seletores de campus e raio
+      (`src/app/busca/search-form.tsx`). O estudante entra com o campus da
+      universidade dele; se escolher "todos os campi", a URL guarda
+      `campus=todos` para o campus não voltar sozinho
+- [x] #30 Filtros de preço e tipo de vaga, no mesmo formulário do campus e do
+      raio (`src/app/busca/search-form.tsx`), com "Limpar"
+- [x] #31 Mapa dos resultados (`src/components/map/search-map.tsx`): campus,
+      raio e um marcador por anúncio da página atual, com resumo e link ao
+      clicar. No celular fica atrás do botão "Ver no mapa"
 - [x] #32 Botão de contato (só para estudante logado). Entrou com a página do
       anúncio (#27): regra e links em `src/lib/listings/contact.ts`, E2E em
       `e2e/listing-details.spec.ts`. O card da busca (#28) não repete o
       contato: leva à página do anúncio
+
+### Melhorias da Fase 5
+
+- [x] Anúncios na página inicial: os 6 mais recentes; para o estudante
+      logado, os 6 mais perto do campus da universidade dele
+- [x] Ordenar por menor preço (`?ordem=preco`); no empate vale a distância
+      (com campus) ou a data (sem)
+- [x] Aviso "Atualizando os resultados..." com a lista esmaecida enquanto a
+      busca nova carrega (troca de filtro, de página ou "Limpar")
+- [x] O card sob o mouse destaca o marcador no mapa, e o marcador destaca o
+      card
+- [x] No celular os filtros ficam atrás do botão "Filtros" (aberto quando
+      ainda não há campus escolhido)
+
+### Identidade visual (30/09/2026)
+
+Decisões: site em **preto e branco**, como a logo; **só tema claro** (a logo é
+preta e some em fundo escuro); repaginada em todas as telas.
+
+- [x] Logo no cabeçalho, no rodapé e no favicon (`public/brand/`, variações
+      geradas por `node scripts/build-logo.mjs`)
+- [x] Títulos em Poppins, botões em pílula, campos mais altos, cantos mais
+      arredondados, fundo cinza claro com cartões brancos
+- [x] Página inicial nova: topo com os campi atendidos, destaques, "Como
+      funciona" numerado e faixa para quem quer anunciar
+- [x] Cards de anúncio, busca, página do anúncio, formulários, perfil, Meus
+      anúncios e páginas de erro no mesmo padrão
+- [x] Layout inspirado no Airbnb e na referência da dupla (01/10/2026):
+      topo com foto e busca em pílula, categorias de tipo de vaga, busca com
+      lista e mapa lado a lado e marcadores com o preço, cards sem moldura,
+      seção "É sobre a sua jornada" e página do anúncio com mosaico de fotos
+      e cartão de contato fixo. Fora (não existe no sistema): favoritos,
+      mensagens, reservas, aplicativo e depoimentos
+- [x] Fotos nos anúncios de demonstração: 18 imagens geradas por IA, três por
+      anúncio, no Cloudinary (`uniteto/demo/`). Funcionam em qualquer máquina
+      com `npm run db:seed-demo`
 
 ## Fase 6 — Qualidade e entrega
 

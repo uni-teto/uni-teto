@@ -44,15 +44,17 @@ describe("signInUrl", () => {
 });
 
 describe("homeForRole", () => {
-  it("leva o anunciante para Meus anúncios e o estudante para o início", () => {
+  it("leva o anunciante para Meus anúncios e o estudante para a busca", () => {
     expect(homeForRole("ANUNCIANTE")).toBe("/meus-anuncios");
-    expect(homeForRole("ESTUDANTE")).toBe("/");
+    expect(homeForRole("ESTUDANTE")).toBe("/busca");
   });
 });
 
 describe("caminhos do anúncio", () => {
   it("codifica o id na URL", () => {
     expect(listingPath("abc")).toBe("/anuncios/abc");
+    expect(listingPath("abc", null)).toBe("/anuncios/abc");
+    expect(listingPath("abc", "ufpi 1")).toBe("/anuncios/abc?campus=ufpi%201");
     expect(editListingPath("abc")).toBe("/anuncios/abc/editar");
     expect(listingPhotosPath("a/b")).toBe("/anuncios/a%2Fb/fotos");
   });

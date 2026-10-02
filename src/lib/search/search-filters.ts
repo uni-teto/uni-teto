@@ -1,7 +1,8 @@
+import { SEARCH_PATH } from "@/lib/auth/routes";
 import { LISTING_TYPES, type ListingType } from "@/lib/listings/listing-types";
 
 // Filtros da busca (#41), lidos da URL para o link poder ser compartilhado:
-// `/?campus=<id>&raio=2&precoMin=300&precoMax=800&tipo=QUARTO&pagina=2`.
+// `/busca?campus=<id>&raio=2&precoMin=300&precoMax=800&tipo=QUARTO&ordem=preco&pagina=2`.
 //
 // A página é pública e a URL pode vir de qualquer lugar: valor inválido não
 // dá erro, só é ignorado (volta ao padrão).
@@ -12,10 +13,25 @@ export type RadiusKm = (typeof RADIUS_OPTIONS_KM)[number];
 
 export const PAGE_SIZE = 12;
 
+/**
+ * `?campus=todos`: o estudante escolheu ver todos os campi. Sem isso a busca
+ * voltaria sozinha para o campus da universidade dele (src/app/busca/page.tsx).
+ * Não é id de campus, então a busca trata como "sem campus".
+ */
+export const NO_CAMPUS = "todos";
+
 // Acima disso o OFFSET fica caro e não há tanto anúncio assim
 const MAX_PAGE = 1000;
 // Maior preço aceito num filtro, em reais (cabe folgado num inteiro do banco)
 const MAX_PRICE_REAIS = 1_000_000;
+
+/**
+ * Ordem dos resultados. "padrao": do mais perto para o mais longe (com
+ * campus) ou dos mais recentes para os mais antigos (sem campus). "preco":
+ * do mais barato para o mais caro; no empate, vale a ordem padrão.
+ */
+export const SEARCH_SORTS = ["padrao", "preco"] as const;
+export type SearchSort = (typeof SEARCH_SORTS)[number];
 
 export type SearchFilters = {
   /** Sem campus: lista por mais recentes, sem distância */
@@ -25,8 +41,20 @@ export type SearchFilters = {
   minPriceCents: number | null;
   maxPriceCents: number | null;
   type: ListingType | null;
+  sort: SearchSort;
   /** Começa em 1 */
   page: number;
+};
+
+/** Busca sem nenhum filtro, na primeira página. */
+export const NO_FILTERS: SearchFilters = {
+  campusId: null,
+  radiusKm: null,
+  minPriceCents: null,
+  maxPriceCents: null,
+  type: null,
+  sort: "padrao",
+  page: 1,
 };
 
 type RawParams = Record<string, string | string[] | undefined>;
@@ -69,6 +97,7 @@ export function parseSearchFilters(params: RawParams): SearchFilters {
     type: LISTING_TYPES.includes(type as ListingType)
       ? (type as ListingType)
       : null,
+    sort: text("ordem") === "preco" ? "preco" : "padrao",
     page: Math.max(1, wholeNumber(text("pagina"), MAX_PAGE) ?? 1),
   };
 }
@@ -92,6 +121,13 @@ export function searchQueryString(filters: SearchFilters): string {
     query.set("precoMax", String(filters.maxPriceCents / 100));
   }
   if (filters.type) query.set("tipo", filters.type);
+  if (filters.sort !== "padrao") query.set("ordem", filters.sort);
   if (filters.page > 1) query.set("pagina", String(filters.page));
   return query.toString();
+}
+
+/** Endereço da busca com os filtros, ex: `/busca?campus=ufpi-...&pagina=2`. */
+export function searchUrl(filters: SearchFilters): string {
+  const query = searchQueryString(filters);
+  return query ? `${SEARCH_PATH}?${query}` : SEARCH_PATH;
 }

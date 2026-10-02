@@ -1,7 +1,10 @@
+import { SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { NEW_LISTING_PATH } from "@/lib/auth/routes";
+import { NEW_LISTING_PATH, SEARCH_PATH } from "@/lib/auth/routes";
 import { getSessionOrNull } from "@/lib/auth/session";
+import { Logo } from "./logo";
+import { MainNav } from "./main-nav";
 import { UserMenu } from "./user-menu";
 
 export async function SiteHeader() {
@@ -9,19 +12,36 @@ export async function SiteHeader() {
   const session = await getSessionOrNull();
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        <Link href="/" className="font-semibold tracking-tight">
-          UniTeto
-        </Link>
+    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
+        <div className="flex items-center gap-10">
+          <Link href="/" className="shrink-0 rounded-md">
+            {/* No celular só o símbolo, para sobrar espaço para os botões */}
+            <Logo className="hidden h-8 sm:block" />
+            <Logo variant="symbol" className="h-9 sm:hidden" />
+          </Link>
+          <MainNav className="hidden md:flex" />
+        </div>
 
-        <nav className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-1 text-sm sm:gap-2">
+          {/* Em tela larga a busca já está nos links principais */}
+          <Link
+            href={SEARCH_PATH}
+            aria-label="Buscar"
+            className={buttonVariants({
+              variant: "ghost",
+              size: "icon",
+              className: "md:hidden",
+            })}
+          >
+            <SearchIcon aria-hidden />
+          </Link>
           {session ? (
             <>
               {/* Estudante e anunciante podem anunciar */}
               <Link
                 href={NEW_LISTING_PATH}
-                className={buttonVariants({ variant: "outline", size: "sm" })}
+                className={buttonVariants({ size: "sm" })}
               >
                 Anunciar
               </Link>
@@ -34,17 +54,20 @@ export async function SiteHeader() {
           ) : (
             <>
               <Link
-                href="/login"
+                href="/cadastro"
                 className={buttonVariants({ variant: "ghost", size: "sm" })}
+              >
+                Criar conta
+              </Link>
+              <Link
+                href="/login"
+                className={buttonVariants({ size: "sm", className: "px-5" })}
               >
                 Entrar
               </Link>
-              <Link href="/cadastro" className={buttonVariants({ size: "sm" })}>
-                Criar conta
-              </Link>
             </>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );

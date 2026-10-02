@@ -13,6 +13,7 @@ import { PAGE_SIZE, type SearchFilters } from "./search-filters";
 //   longe. Os dois pontos vêm de `geoPoint`, a mesma expressão do índice.
 // - Sem campus: todos os anúncios ativos, do mais recente para o mais antigo,
 //   sem distância.
+// - `sort: "preco"` põe o mais barato primeiro; a ordem acima desempata.
 // - Só anúncios `ATIVO`. O `id` desempata a ordem, para a paginação não
 //   repetir nem pular anúncio.
 
@@ -84,9 +85,14 @@ export function searchListingsSql(filters: SearchFilters, pageSize: number) {
   const distance = withCampus
     ? Prisma.sql`ST_Distance(${geoPoint("l")}, ${geoPoint("c")})`
     : Prisma.sql`NULL::double precision`;
-  const order = withCampus
+  const defaultOrder = withCampus
     ? Prisma.sql`"distanceMeters", l."id"`
     : Prisma.sql`l."createdAt" DESC, l."id"`;
+  // Por preço, a ordem padrão desempata (o mais perto entre os de mesmo preço)
+  const order =
+    filters.sort === "preco"
+      ? Prisma.sql`l."priceCents", ${defaultOrder}`
+      : defaultOrder;
 
   return Prisma.sql`
     SELECT

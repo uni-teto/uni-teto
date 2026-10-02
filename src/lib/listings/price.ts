@@ -24,6 +24,15 @@ export function formatPrice(cents: number): string {
   });
 }
 
+/** 65000 → "R$ 650" (etiqueta curta, sem centavos: marcadores do mapa). */
+export function formatPriceShort(cents: number): string {
+  return (cents / 100).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  });
+}
+
 /** 65000 → "650,00" (valor inicial do campo de preço ao editar). */
 export function centsToPriceInput(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", {

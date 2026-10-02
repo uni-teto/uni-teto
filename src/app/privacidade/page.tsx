@@ -16,9 +16,7 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 space-y-8 px-4 py-10 text-sm leading-relaxed">
       <header className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Política de privacidade
-        </h1>
+        <h1 className="text-3xl font-semibold">Política de privacidade</h1>
         <p className="text-muted-foreground">
           O UniTeto é um projeto de TCC que ajuda universitários a encontrar
           moradia perto do campus. Aqui explicamos quais dados guardamos, quem

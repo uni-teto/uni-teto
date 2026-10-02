@@ -1,11 +1,16 @@
 import "dotenv/config";
 import { prisma } from "@/lib/prisma";
-import { demoListings, demoOwners } from "@/lib/seed/demo-listings";
+import {
+  demoListingPhotos,
+  demoListings,
+  demoOwners,
+} from "@/lib/seed/demo-listings";
 
 // Anúncios de demonstração para ver a busca funcionando:
 // `npm run db:seed-demo`. Pode rodar várias vezes: atualiza o que já existe,
 // sem duplicar. `npm run db:seed-demo -- --remove` apaga tudo de novo (os
-// anúncios saem em cascata com os donos).
+// anúncios e as fotos saem em cascata com os donos). As fotos em si ficam no
+// Cloudinary (`uniteto/demo/`): outras máquinas usam os mesmos endereços.
 //
 // Precisa do `npm run db:seed` antes (os donos estudantes são vinculados às
 // universidades). Os dados e a origem deles estão em
@@ -38,8 +43,14 @@ async function seed() {
     });
   }
 
+  // Fotos: troca todas as dos anúncios de demonstração pelas da lista
+  await prisma.listingPhoto.deleteMany({
+    where: { listingId: { in: demoListings.map((listing) => listing.id) } },
+  });
+  await prisma.listingPhoto.createMany({ data: demoListingPhotos });
+
   console.log(
-    `Demonstração: ${demoListings.length} anúncios de ${demoOwners.length} contas.`,
+    `Demonstração: ${demoListings.length} anúncios de ${demoOwners.length} contas, com ${demoListingPhotos.length} fotos.`,
   );
 }
 

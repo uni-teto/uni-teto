@@ -49,7 +49,8 @@ test("cadastro, confirmação por e-mail, perfil, saída e novo login", async ({
   await page.getByRole("link", { name: "Entrar" }).click();
   await expect(page).toHaveURL("/login");
   await signIn(page, email, TEST_PASSWORD);
-  await expect(page).toHaveURL("/");
+  // Estudante cai na busca, já no campus da universidade dele
+  await expect(page).toHaveURL("/busca?campus=ufpi-petronio-portella");
   await expect(
     page.getByRole("button", { name: "Menu da conta" }),
   ).toBeVisible();
@@ -109,7 +110,7 @@ test("esqueci minha senha: redefine e entra com a senha nova", async ({
   await expect(page.getByText("E-mail ou senha incorretos.")).toBeVisible();
 
   await signIn(page, email, newPassword);
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL("/busca?campus=ufpi-petronio-portella");
 });
 
 test("link de redefinição inválido explica e oferece um novo", async ({

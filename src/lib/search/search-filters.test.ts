@@ -1,18 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  NO_CAMPUS,
+  NO_FILTERS,
   parseSearchFilters,
   searchQueryString,
+  searchUrl,
   type SearchFilters,
 } from "./search-filters";
 
-const EMPTY: SearchFilters = {
-  campusId: null,
-  radiusKm: null,
-  minPriceCents: null,
-  maxPriceCents: null,
-  type: null,
-  page: 1,
-};
+const EMPTY = NO_FILTERS;
 
 describe("parseSearchFilters", () => {
   it("sem parâmetros, busca tudo na primeira página", () => {
@@ -35,6 +31,7 @@ describe("parseSearchFilters", () => {
       minPriceCents: 300_00,
       maxPriceCents: 800_00,
       type: "VAGA_REPUBLICA",
+      sort: "padrao",
       page: 3,
     });
   });
@@ -95,11 +92,12 @@ describe("searchQueryString", () => {
       minPriceCents: 250_00,
       maxPriceCents: 900_00,
       type: "QUITINETE",
+      sort: "preco",
       page: 2,
     };
     const query = searchQueryString(filters);
     expect(query).toBe(
-      "campus=uespi-torquato-neto&raio=5&precoMin=250&precoMax=900&tipo=QUITINETE&pagina=2",
+      "campus=uespi-torquato-neto&raio=5&precoMin=250&precoMax=900&tipo=QUITINETE&ordem=preco&pagina=2",
     );
     expect(
       parseSearchFilters(Object.fromEntries(new URLSearchParams(query))),
@@ -108,5 +106,31 @@ describe("searchQueryString", () => {
 
   it("não leva o raio sem campus", () => {
     expect(searchQueryString({ ...EMPTY, radiusKm: 2 })).toBe("");
+  });
+});
+
+describe("ordem", () => {
+  it("só aceita a ordem por preço; o resto é a ordem padrão", () => {
+    expect(parseSearchFilters({ ordem: "preco" }).sort).toBe("preco");
+    expect(parseSearchFilters({ ordem: "caro" }).sort).toBe("padrao");
+    expect(parseSearchFilters({}).sort).toBe("padrao");
+    expect(searchUrl({ ...EMPTY, sort: "preco" })).toBe("/busca?ordem=preco");
+  });
+});
+
+describe("NO_CAMPUS", () => {
+  it("fica na URL e é lido de volta, para o campus do estudante não voltar", () => {
+    const url = searchUrl({ ...EMPTY, campusId: NO_CAMPUS, page: 2 });
+    expect(url).toBe("/busca?campus=todos&pagina=2");
+    expect(parseSearchFilters({ campus: "todos" }).campusId).toBe(NO_CAMPUS);
+  });
+});
+
+describe("searchUrl", () => {
+  it("monta o endereço da busca, sem `?` na busca padrão", () => {
+    expect(searchUrl(EMPTY)).toBe("/busca");
+    expect(searchUrl({ ...EMPTY, type: "QUARTO", page: 2 })).toBe(
+      "/busca?tipo=QUARTO&pagina=2",
+    );
   });
 });

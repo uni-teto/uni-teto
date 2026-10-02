@@ -110,7 +110,12 @@ sozinho.
   o WhatsApp do dono nem são buscados no banco. Distância aos campi com
   `getCampusDistancesToListing`.
 - Mapa: `src/components/map/` (react-leaflet, só no navegador via
-  `LazyListingMap`, com `ssr: false`). Marcadores em `CircleMarker`, sem o
+  `LazyListingMap` e `LazySearchMap`, com `ssr: false`). Cores, tiles e
+  enquadramento comuns em `map-parts.tsx`. O mapa da busca (`search-map.tsx`,
+  usado por `src/app/busca/results-map.tsx`) mostra só os anúncios da página
+  atual, como etiquetas de preço (`divIcon` com a classe `search-map-listing`,
+  `is-active` no destacado; estilo em `globals.css`). Em tela larga fica numa
+  coluna fixa à direita da lista. Marcadores em `CircleMarker`, sem o
   ícone padrão do Leaflet (as imagens dele não vêm com o bundler). Nos E2E os
   tiles do OSM são bloqueados com `context.route`.
 - Ações sobre um anúncio (fotos, editar, pausar, excluir): começar com
@@ -122,17 +127,35 @@ sozinho.
   coordenada), script em `prisma/seed.ts`, `npm run db:seed`. Só adicionar
   universidade com domínio de e-mail de aluno confirmado em fonte oficial.
 - Busca: `src/lib/search/`. `parseSearchFilters` lê os filtros da URL
-  (`campus`, `raio` em km, `precoMin`/`precoMax` em reais, `tipo`, `pagina`;
+  (`campus`, `raio` em km, `precoMin`/`precoMax` em reais, `tipo`, `ordem`, `pagina`;
   valor inválido é ignorado) e `searchQueryString` monta os links.
   `searchListings` devolve só anúncios ativos: com campus, filtra por
   `ST_DWithin` e ordena por distância; sem campus, por mais recentes e sem
-  distância. Decisões em `docs/TAREFAS.md`. Os testes de integração isolam os
+  distância. Decisões em `docs/TAREFAS.md`. Página pública em `/busca`
+  (`SEARCH_PATH`, `src/app/busca/`; links com `searchUrl`): campus que não
+  existe vira busca sem campus e página além da última redireciona para a
+  última. Estudante sem `?campus=` é redirecionado para o campus da
+  universidade dele; `campus=todos` (`NO_CAMPUS`) marca que ele escolheu ver
+  todos. A página inicial mostra 6 destaques com a mesma consulta e o mesmo
+  card (`ListingCard`). Filtros em `src/app/busca/search-form.tsx`: os seletores aplicam na
+  hora e o preço ao enviar; a página troca a `key` do formulário quando a URL
+  muda. `src/app/busca/search-ui.tsx` guarda o estado só do navegador:
+  `useSearchUi().navigate(url)` (ou `SearchLink`) troca de busca mostrando o
+  "carregando", e `activeId` liga o card ao marcador do mapa. Ao montar um
+  `SearchFilters`, parta de `NO_FILTERS`. Nos E2E, ache o anúncio do teste por um preço exclusivo
+  (`publishListing(page, { price })` e `?precoMin=&precoMax=`), porque os
+  títulos se repetem. Os testes de integração isolam os
   dados deles por uma faixa de preço exclusiva (o banco pode ter o seed de
   demonstração).
 - Anúncios de demonstração: `npm run db:seed-demo` (`-- --remove` apaga),
   dados em `src/lib/seed/demo-listings.ts` (ruas e CEPs reais, imóveis
   fictícios, donos sem senha em `uniteto.example`). Grava direto no banco, sem
   Nominatim; para acrescentar, geocodifique a rua antes e copie o resultado.
+  Fotos (geradas por IA): 3 por anúncio, no Cloudinary em `uniteto/demo/`
+  (fora do `cloudinary:cleanup`), com os endereços em
+  `src/lib/seed/demo-photos.ts`; outras máquinas usam os mesmos endereços.
+  Para trocar as fotos: `npm run cloudinary:demo-photos` (precisa dos
+  originais em `imgsanuncios/` e `imgslayout/`, fora do git).
 - Auth: config em `src/lib/auth/server.ts`, cliente em `src/lib/auth/client.ts`,
   rotas em `/api/auth/*`. Domínios permitidos = `University.emailDomain`; a
   checagem roda no hook `databaseHooks.user.create.before` (servidor).
@@ -168,6 +191,20 @@ sozinho.
   outro serviço externo, atualize a página.
 - Respostas de auth não revelam se um e-mail existe (cadastro repetido e
   "esqueci minha senha" mostram a mesma mensagem; o aviso vai por e-mail).
+- Identidade visual: preto e branco, como a logo, e **só tema claro** (não há
+  bloco `.dark` em `src/app/globals.css`; não acrescentar cor de destaque sem
+  pedido). Fundo da página cinza claro (`--page`) com cartões brancos
+  (`bg-card`, `rounded-2xl border`). Títulos (`h1` a `h3`) em Poppins
+  (`font-heading`); botões em pílula (`buttonVariants`). Logo: componente
+  `Logo` (`src/components/logo.tsx`, variantes `horizontal` e `symbol`,
+  `inverted` em fundo escuro); fotos do layout (página inicial) em
+  `public/images/` (WebP; os originais ficam fora do git, em `imgslayout/`),
+  sempre com `next/image`. Layout inspirado no Airbnb: busca em pílula no topo
+  da página inicial (`src/app/hero-search.tsx`), categorias de tipo de vaga na
+  busca (`type-chips.tsx`), cards sem moldura e página do anúncio com mosaico
+  de fotos, cartão de contato fixo e barra de preço no celular. Os arquivos em `public/brand/` e o favicon
+  (`src/app/icon.svg`) são gerados por `node scripts/build-logo.mjs` a partir
+  de `public/brand/uniteto-logo.svg`.
 - Feedback de ações (salvou, enviou, saiu): toast do `sonner`
   (`import { toast } from "sonner"`); erros de campo ficam no formulário.
 - Depois de mudar o schema, `npm run db:migrate` (já roda o `prisma generate`;

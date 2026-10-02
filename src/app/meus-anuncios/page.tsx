@@ -57,7 +57,7 @@ export default async function MyListingsPage() {
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Meus anúncios</h1>
+        <h1 className="text-3xl font-semibold">Meus anúncios</h1>
         {listings.length > 0 && (
           <Link href={NEW_LISTING_PATH} className={buttonVariants()}>
             <PlusIcon aria-hidden />
@@ -67,7 +67,7 @@ export default async function MyListingsPage() {
       </div>
 
       {listings.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed px-4 py-16 text-center">
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed bg-card px-4 py-16 text-center">
           <HouseIcon className="size-8 text-muted-foreground" aria-hidden />
           <div>
             <p className="font-medium">Você ainda não tem anúncios</p>
@@ -88,7 +88,7 @@ export default async function MyListingsPage() {
               <li
                 key={listing.id}
                 aria-label={listing.title}
-                className="flex flex-col gap-4 rounded-xl border p-4 sm:flex-row"
+                className="flex flex-col gap-4 rounded-2xl border bg-card p-4 shadow-sm sm:flex-row"
               >
                 <div className="aspect-[4/3] w-full shrink-0 overflow-hidden rounded-lg bg-muted sm:w-40">
                   {cover ? (

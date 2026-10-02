@@ -117,7 +117,7 @@ export function SignUpForm({ defaultRole }: { defaultRole?: UserRole }) {
               <label
                 key={value}
                 className={cn(
-                  "flex cursor-pointer gap-3 rounded-lg border p-3 text-sm transition-colors hover:bg-muted/50",
+                  "flex cursor-pointer gap-3 rounded-xl border p-3 text-sm transition-colors hover:bg-muted",
                   "has-checked:border-primary has-checked:bg-primary/5",
                   "has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
                 )}
