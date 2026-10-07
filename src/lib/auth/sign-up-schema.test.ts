@@ -4,7 +4,10 @@ import { signUpSchema, type SignUpInput } from "./sign-up-schema";
 
 const valid: SignUpInput = {
   role: "ESTUDANTE",
-  name: "Maria Silva",
+  name: "Maria",
+  surname: "Silva",
+  sex: "FEMININO",
+  whatsapp: "(86) 99999-8888",
   email: "maria@ufpi.edu.br",
   password: "senha-segura",
   confirmPassword: "senha-segura",

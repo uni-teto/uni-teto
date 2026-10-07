@@ -259,7 +259,7 @@ export default async function Home() {
             <li key={title} className="rounded-2xl border bg-card p-6">
               <span
                 aria-hidden
-                className="mb-4 flex size-9 items-center justify-center rounded-full bg-primary font-heading text-sm font-semibold text-primary-foreground"
+                className="mb-4 flex size-9 items-center justify-center rounded-full bg-gold font-heading text-sm font-semibold text-gold-foreground"
               >
                 {index + 1}
               </span>
@@ -298,7 +298,7 @@ export default async function Home() {
               </div>
               <Link
                 href={session ? NEW_LISTING_PATH : "/cadastro?papel=anunciante"}
-                className={buttonVariants({ size: "lg", variant: "secondary" })}
+                className={buttonVariants({ size: "lg", variant: "gold" })}
               >
                 {session ? "Publicar um anúncio" : "Quero anunciar"}
               </Link>

@@ -38,7 +38,7 @@ export type SearchMapListing = {
 
 /**
  * Marcador em forma de etiqueta com o preço (HTML, sem as imagens do ícone
- * padrão do Leaflet). Em destaque fica preto; a classe `is-active` marca isso
+ * padrão do Leaflet). Em destaque fica azul; a classe `is-active` marca isso
  * para os testes. O preço vem de `formatPriceShort`: só dígitos e "R$".
  */
 function priceIcon(price: string, active: boolean) {

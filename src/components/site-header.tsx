@@ -5,6 +5,7 @@ import { NEW_LISTING_PATH, SEARCH_PATH } from "@/lib/auth/routes";
 import { getSessionOrNull } from "@/lib/auth/session";
 import { Logo } from "./logo";
 import { MainNav } from "./main-nav";
+import { displayName } from "@/lib/profile/name";
 import { UserMenu } from "./user-menu";
 
 export async function SiteHeader() {
@@ -46,7 +47,7 @@ export async function SiteHeader() {
                 Anunciar
               </Link>
               <UserMenu
-                name={session.user.name}
+                name={displayName(session.user)}
                 email={session.user.email}
                 image={session.user.image}
               />
