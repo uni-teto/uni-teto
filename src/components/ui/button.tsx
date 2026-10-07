@@ -17,6 +17,8 @@ const buttonVariants = cva(
           "border-transparent hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
         destructive:
           "border-transparent bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+        // Destaque dourado (cores da UFPI/UESPI), para usar com moderação
+        gold: "border-transparent bg-gold text-gold-foreground hover:bg-gold/85",
         link: "border-transparent text-primary underline-offset-4 hover:underline",
       },
       size: {
