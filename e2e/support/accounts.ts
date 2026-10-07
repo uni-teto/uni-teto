@@ -3,6 +3,7 @@ import { waitForEmailLink } from "./mailpit";
 
 // Senha só dos testes E2E (contas criadas no banco local/CI)
 export const TEST_PASSWORD = "senha-e2e-123";
+export const TEST_WHATSAPP = "(86) 99999-8888";
 
 export type Role = "ESTUDANTE" | "ANUNCIANTE";
 
@@ -44,7 +45,12 @@ export async function fillSignUpForm(
 ) {
   await page.goto("/cadastro");
   await chooseRole(page, role);
-  await page.getByLabel("Nome").fill(name);
+  // "Maria Clara Souza" → nome "Maria", sobrenome "Clara Souza"
+  const [first, ...rest] = name.split(" ");
+  await page.getByLabel("Nome", { exact: true }).fill(first);
+  await page.getByLabel("Sobrenome").fill(rest.join(" ") || "E2E");
+  await page.getByLabel("Sexo").selectOption({ label: "Prefiro não informar" });
+  await page.getByLabel("WhatsApp").fill(TEST_WHATSAPP);
   // O rótulo do e-mail muda conforme o papel escolhido
   await page
     .getByLabel(role === "ESTUDANTE" ? "E-mail institucional" : "E-mail", {

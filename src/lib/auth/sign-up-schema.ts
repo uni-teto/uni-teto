@@ -1,9 +1,19 @@
 import { z } from "zod";
+import {
+  sexSchema,
+  socialNameSchema,
+  surnameSchema,
+  whatsappSchema,
+} from "@/lib/profile/personal-data";
 import { USER_ROLES } from "./roles";
 
 // Mesmos limites de senha configurados no Better Auth (src/lib/auth/server.ts)
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 128;
+
+/** Cadastro com e-mail que já tem conta (src/lib/auth/server.ts). */
+export const EMAIL_ALREADY_REGISTERED_MESSAGE =
+  "Já existe uma conta com este e-mail. Entre ou recupere sua senha.";
 
 // Também usado na edição do perfil
 export const nameSchema = z
@@ -48,6 +58,10 @@ export const signUpSchema = z
       error: "Escolha se você quer procurar moradia ou anunciar um imóvel.",
     }),
     name: nameSchema,
+    surname: surnameSchema,
+    socialName: socialNameSchema,
+    sex: sexSchema,
+    whatsapp: whatsappSchema,
     email: emailSchema,
     password: newPasswordSchema,
     confirmPassword: z.string(),
@@ -55,3 +69,4 @@ export const signUpSchema = z
   .refine(passwordsMatch, passwordsMismatch);
 
 export type SignUpInput = z.input<typeof signUpSchema>;
+export type SignUpData = z.output<typeof signUpSchema>;

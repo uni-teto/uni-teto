@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { FormField } from "@/components/form-field";
 import { PasswordInput } from "@/components/password-input";
+import { PersonalDataFields } from "@/components/personal-data-fields";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,11 @@ import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth/client";
 import type { UserRole } from "@/lib/auth/roles";
 import { EMAIL_VERIFIED_PATH, PRIVACY_PATH } from "@/lib/auth/routes";
-import { signUpSchema, type SignUpInput } from "@/lib/auth/sign-up-schema";
+import {
+  signUpSchema,
+  type SignUpData,
+  type SignUpInput,
+} from "@/lib/auth/sign-up-schema";
 import { ResendVerification } from "./resend-verification";
 
 const ROLE_OPTIONS: ReadonlyArray<{
@@ -56,19 +61,24 @@ export function SignUpForm({ defaultRole }: { defaultRole?: UserRole }) {
     setError,
     control,
     formState: { errors, isSubmitting },
-  } = useForm<SignUpInput>({
+  } = useForm<SignUpInput, unknown, SignUpData>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { role: defaultRole },
+    defaultValues: { role: defaultRole, sex: "" as SignUpInput["sex"] },
   });
   // useWatch (e não watch()) para funcionar com o React Compiler
   const role = useWatch({ control, name: "role" });
   const emailField = EMAIL_FIELD[role ?? "ESTUDANTE"];
 
-  async function onSubmit(input: SignUpInput) {
-    const data = signUpSchema.parse(input);
+  async function onSubmit(data: SignUpData) {
+    // O servidor valida de novo (`databaseHooks.user.create.before` em
+    // src/lib/auth/server.ts)
     const { error } = await authClient.signUp.email({
       role: data.role,
       name: data.name,
+      surname: data.surname,
+      socialName: data.socialName ?? "",
+      sex: data.sex,
+      whatsapp: data.whatsapp,
       email: data.email,
       password: data.password,
       callbackURL: EMAIL_VERIFIED_PATH,
@@ -80,8 +90,13 @@ export function SignUpForm({ defaultRole }: { defaultRole?: UserRole }) {
     }
 
     // Regras de papel e domínio: o erro vem do servidor (src/lib/auth/server.ts)
-    if (error.code === "EMAIL_DOMAIN_NOT_ALLOWED") {
+    if (
+      error.code === "EMAIL_DOMAIN_NOT_ALLOWED" ||
+      error.code === "EMAIL_ALREADY_REGISTERED"
+    ) {
       setError("email", { message: error.message });
+    } else if (error.code === "INVALID_PERSONAL_DATA") {
+      setError("root", { message: error.message });
     } else if (error.code === "INVALID_ROLE") {
       setError("role", { message: error.message });
     } else {
@@ -99,8 +114,7 @@ export function SignUpForm({ defaultRole }: { defaultRole?: UserRole }) {
         </p>
         <p className="text-muted-foreground">
           Abra o e-mail e clique no link para ativar sua conta. Se não
-          encontrar, confira a caixa de spam. Se esse e-mail já tiver conta,
-          enviamos instruções para entrar.
+          encontrar, confira a caixa de spam.
         </p>
         <ResendVerification email={createdEmail} />
       </div>
@@ -139,14 +153,16 @@ export function SignUpForm({ defaultRole }: { defaultRole?: UserRole }) {
           <FieldError errors={[errors.role]} />
         </fieldset>
 
-        <FormField id="name" label="Nome" error={errors.name}>
-          <Input
-            id="name"
-            autoComplete="name"
-            aria-invalid={!!errors.name}
-            {...register("name")}
-          />
-        </FormField>
+        <PersonalDataFields
+          fields={{
+            name: register("name"),
+            surname: register("surname"),
+            socialName: register("socialName"),
+            sex: register("sex"),
+            whatsapp: register("whatsapp"),
+          }}
+          errors={errors}
+        />
 
         <FormField
           id="email"
