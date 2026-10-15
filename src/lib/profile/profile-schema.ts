@@ -1,26 +1,19 @@
 import { z } from "zod";
 import { nameSchema } from "@/lib/auth/sign-up-schema";
-import { normalizeWhatsapp } from "./whatsapp";
+import {
+  sexSchema,
+  socialNameSchema,
+  surnameSchema,
+  whatsappSchema,
+} from "./personal-data";
 
+// Mesmas regras do cadastro
 export const profileSchema = z.object({
   name: nameSchema,
-  // Opcional: vazio vira `null`; preenchido é normalizado para "55DDD9XXXXXXXX"
-  whatsapp: z
-    .string()
-    .trim()
-    .transform((value, ctx) => {
-      if (value === "") return null;
-
-      const normalized = normalizeWhatsapp(value);
-      if (!normalized) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Informe um celular com DDD, ex: (86) 99999-8888.",
-        });
-        return z.NEVER;
-      }
-      return normalized;
-    }),
+  surname: surnameSchema,
+  socialName: socialNameSchema,
+  sex: sexSchema,
+  whatsapp: whatsappSchema,
 });
 
 export type ProfileInput = z.input<typeof profileSchema>;

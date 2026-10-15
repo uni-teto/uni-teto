@@ -2,6 +2,7 @@
 // o e-mail de quem anunciou. A decisão é tomada no servidor, antes de montar a
 // página: para os outros, os dados nem chegam ao HTML.
 
+import { displayName } from "@/lib/profile/name";
 import { formatWhatsapp } from "@/lib/profile/whatsapp";
 
 type Viewer = { id: string; role: "ESTUDANTE" | "ANUNCIANTE" } | null;
@@ -33,13 +34,19 @@ export function contactMessage(listingTitle: string) {
 
 /** Links de contato; o WhatsApp já vem guardado com DDI (`5586999998888`). */
 export function listingContact(
-  owner: { name: string; email: string; whatsapp: string | null },
+  owner: {
+    name: string;
+    surname?: string | null;
+    socialName?: string | null;
+    email: string;
+    whatsapp: string | null;
+  },
   listingTitle: string,
 ): ListingContact {
   const message = encodeURIComponent(contactMessage(listingTitle));
   const subject = encodeURIComponent(`Anúncio no UniTeto: ${listingTitle}`);
   return {
-    ownerName: owner.name,
+    ownerName: displayName(owner),
     email: {
       address: owner.email,
       href: `mailto:${owner.email}?subject=${subject}&body=${message}`,

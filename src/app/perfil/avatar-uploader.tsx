@@ -75,11 +75,11 @@ export function AvatarUploader({
   const busy = status !== "idle";
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-wrap items-center gap-4">
       <UserAvatar
         name={name}
         image={preview ?? image}
-        size={96}
+        size={64}
         className={status === "uploading" ? "animate-pulse opacity-70" : ""}
       />
       <input
@@ -92,37 +92,39 @@ export function AvatarUploader({
           if (file) upload(file);
         }}
       />
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={!enabled || busy}
-          onClick={() => inputRef.current?.click()}
-        >
-          {status === "uploading"
-            ? "Enviando..."
-            : image
-              ? "Alterar foto"
-              : "Adicionar foto"}
-        </Button>
-        {image && (
+      <div className="space-y-1.5">
+        <div className="flex gap-2">
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            disabled={busy}
-            onClick={remove}
+            disabled={!enabled || busy}
+            onClick={() => inputRef.current?.click()}
           >
-            {status === "removing" ? "Removendo..." : "Remover"}
+            {status === "uploading"
+              ? "Enviando..."
+              : image
+                ? "Alterar foto"
+                : "Adicionar foto"}
           </Button>
+          {image && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={busy}
+              onClick={remove}
+            >
+              {status === "removing" ? "Removendo..." : "Remover"}
+            </Button>
+          )}
+        </div>
+        {!enabled && (
+          <p className="text-xs text-muted-foreground">
+            Envio de foto indisponível no momento.
+          </p>
         )}
       </div>
-      {!enabled && (
-        <p className="text-xs text-muted-foreground">
-          Envio de foto indisponível no momento.
-        </p>
-      )}
     </div>
   );
 }

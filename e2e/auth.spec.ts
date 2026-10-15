@@ -17,6 +17,18 @@ test("cadastro recusa e-mail fora das universidades cadastradas", async ({
   await expect(page.getByText("Esse domínio não está na lista")).toBeVisible();
 });
 
+test("cadastro avisa no campo quando o e-mail já tem conta", async ({
+  page,
+}) => {
+  const { email } = await createVerifiedAccount(page);
+  await page.context().clearCookies();
+  await fillSignUpForm(page, "Outra Pessoa", email);
+
+  await expect(
+    page.getByText("Já existe uma conta com este e-mail."),
+  ).toBeVisible();
+});
+
 test("cadastro, confirmação por e-mail, perfil, saída e novo login", async ({
   page,
 }) => {
@@ -26,20 +38,27 @@ test("cadastro, confirmação por e-mail, perfil, saída e novo login", async ({
   const menu = page.getByRole("button", { name: "Menu da conta" });
   await expect(menu).toContainText("Olá, Maria");
 
-  // Perfil: WhatsApp com máscara enquanto digita
+  // Perfil: dados do cadastro, WhatsApp com máscara enquanto digita e nome
+  // social no lugar do nome
   await menu.click();
   await page.getByRole("menuitem", { name: "Meu perfil" }).click();
   await expect(page).toHaveURL("/perfil");
-  const whatsapp = page.getByLabel("WhatsApp (opcional)");
-  await whatsapp.pressSequentially("86999998888");
+  await expect(page.getByLabel("Sobrenome")).toHaveValue("Clara Souza");
+  const whatsapp = page.getByLabel("WhatsApp");
   await expect(whatsapp).toHaveValue("(86) 99999-8888");
+  await whatsapp.clear();
+  await whatsapp.pressSequentially("86988887777");
+  await expect(whatsapp).toHaveValue("(86) 98888-7777");
+  await page.getByLabel("Nome social (opcional)").fill("Duda Souza");
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByText("Alterações salvas.")).toBeVisible();
 
   await page.reload();
-  await expect(page.getByLabel("WhatsApp (opcional)")).toHaveValue(
-    "(86) 99999-8888",
-  );
+  await expect(page.getByLabel("WhatsApp")).toHaveValue("(86) 98888-7777");
+  await expect(page.getByText("Nome civil")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Menu da conta" }),
+  ).toContainText("Olá, Duda");
 
   // Sair e entrar de novo
   await page.getByRole("button", { name: "Menu da conta" }).click();

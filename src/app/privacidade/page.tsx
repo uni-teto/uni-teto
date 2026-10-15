@@ -28,13 +28,14 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-semibold">O que guardamos</h2>
         <ul className="list-disc space-y-1 pl-5">
           <li>
-            <strong>Conta:</strong> nome, e-mail, tipo de conta (estudante ou
-            anunciante) e, para estudantes, a universidade (descoberta pelo
-            domínio do e-mail). A senha é guardada só de forma criptografada
-            (hash): nem nós conseguimos lê-la.
+            <strong>Conta:</strong> nome, sobrenome, sexo, WhatsApp, e-mail,
+            tipo de conta (estudante ou anunciante) e, para estudantes, a
+            universidade (descoberta pelo domínio do e-mail). A senha é guardada
+            só de forma criptografada (hash): nem nós conseguimos lê-la.
           </li>
           <li>
-            <strong>Opcionais do perfil:</strong> WhatsApp e foto.
+            <strong>Opcionais do perfil:</strong> nome social e foto. Com nome
+            social, é ele que aparece no site no lugar do nome.
           </li>
           <li>
             <strong>Anúncios:</strong> título, descrição, preço, vagas, endereço
@@ -62,7 +63,9 @@ export default function PrivacyPage() {
             dados, nem no código da página.
           </li>
           <li>
-            O e-mail e a universidade de estudantes não aparecem para ninguém.
+            O e-mail e a universidade de estudantes não aparecem para ninguém. O
+            sexo e o nome civil (de quem usa nome social) só aparecem no seu
+            próprio perfil.
           </li>
         </ul>
       </section>

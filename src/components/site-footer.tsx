@@ -10,7 +10,7 @@ const links = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-primary text-primary-foreground">
+    <footer className="border-t-4 border-gold bg-primary text-primary-foreground">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-4">
           <Logo variant="symbol" inverted className="h-12" />

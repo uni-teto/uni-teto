@@ -175,7 +175,13 @@ export default async function ListingPage({
   if (!block) {
     const owner = await prisma.user.findUniqueOrThrow({
       where: { id: listing.ownerId },
-      select: { name: true, email: true, whatsapp: true },
+      select: {
+        name: true,
+        surname: true,
+        socialName: true,
+        email: true,
+        whatsapp: true,
+      },
     });
     contact = listingContact(owner, listing.title);
   }

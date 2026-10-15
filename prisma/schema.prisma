@@ -52,9 +52,21 @@ enum UserRole {
   ANUNCIANTE
 }
 
+enum Sex {
+  FEMININO
+  MASCULINO
+  NAO_INFORMADO
+}
+
 model User {
   id            String      @id @default(cuid())
+  // Primeiro nome (o Better Auth exige o campo `name`); sobrenome à parte.
+  // Nulos só em contas criadas antes desses campos: o cadastro exige os dois.
   name          String
+  surname       String?
+  // Opcional; quando preenchido, aparece no lugar do nome em todo o site
+  socialName    String?
+  sex           Sex?
   email         String      @unique
   emailVerified Boolean     @default(false)
   image         String?

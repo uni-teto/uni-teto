@@ -8,7 +8,8 @@ import { TileLayer, useMap } from "react-leaflet";
 
 // Cores fixas: o mapa (tiles do OSM) é claro também no tema escuro
 export const LISTING_COLOR = "#dc2626";
-export const CAMPUS_COLOR = "#2563eb";
+// Campus no azul-marinho da identidade (--primary)
+export const CAMPUS_COLOR = "#0e3685";
 
 /** Tiles do OpenStreetMap, com a atribuição que a licença exige. */
 export function OsmTiles() {

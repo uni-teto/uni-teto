@@ -12,7 +12,7 @@ test("cadastro exige escolher entre procurar moradia e anunciar", async ({
   page,
 }) => {
   await page.goto("/cadastro");
-  await page.getByLabel("Nome").fill("Sem Papel");
+  await page.getByLabel("Nome", { exact: true }).fill("Sem Papel");
   await page
     .getByLabel("E-mail institucional", { exact: true })
     .fill(uniqueEmail());
