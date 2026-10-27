@@ -134,7 +134,9 @@ papéis (#40):
 ### Identidade visual (30/09/2026)
 
 Decisões: site em **preto e branco**, como a logo; **só tema claro** (a logo é
-preta e some em fundo escuro); repaginada em todas as telas.
+preta e some em fundo escuro); repaginada em todas as telas. Em 07/10/2026 a
+paleta virou **azul-marinho e dourado**, as cores dos brasões da UFPI e da
+UESPI (o tema continua só claro).
 
 - [x] Logo no cabeçalho, no rodapé e no favicon (`public/brand/`, variações
       geradas por `node scripts/build-logo.mjs`)

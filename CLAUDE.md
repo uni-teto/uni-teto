@@ -191,9 +191,11 @@ sozinho.
   outro serviço externo, atualize a página.
 - Respostas de auth não revelam se um e-mail existe (cadastro repetido e
   "esqueci minha senha" mostram a mesma mensagem; o aviso vai por e-mail).
-- Identidade visual: preto e branco, como a logo, e **só tema claro** (não há
-  bloco `.dark` em `src/app/globals.css`; não acrescentar cor de destaque sem
-  pedido). Fundo da página cinza claro (`--page`) com cartões brancos
+- Identidade visual: azul-marinho e dourado, as cores em comum dos brasões da
+  UFPI e da UESPI (decisão de 07/10/2026; antes era preto e branco). O azul
+  (`primary`) é a cor principal; o dourado (`gold`, variante `gold` do botão)
+  só em poucos destaques, com texto azul em cima. **Só tema claro** (não há
+  bloco `.dark` em `src/app/globals.css`). Fundo da página cinza-azulado claro (`--page`) com cartões brancos
   (`bg-card`, `rounded-2xl border`). Títulos (`h1` a `h3`) em Poppins
   (`font-heading`); botões em pílula (`buttonVariants`). Logo: componente
   `Logo` (`src/components/logo.tsx`, variantes `horizontal` e `symbol`,
