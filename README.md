@@ -22,36 +22,88 @@ Compose
 
 ## Pré-requisitos
 
-- Node.js 24 (versão em `.nvmrc`)
-- Docker Desktop (para o banco e o Mailpit; opcionalmente, também a aplicação)
+O site precisa de três coisas rodando ao mesmo tempo:
+
+| O quê                       | Para quê                                                | Porta  |
+| --------------------------- | ------------------------------------------------------- | ------ |
+| PostgreSQL com PostGIS      | banco de dados (o PostGIS calcula a distância)          | `5432` |
+| Mailpit                     | recebe os e-mails de confirmação (sem ele não há login) | `8025` |
+| A aplicação (`npm run dev`) | o site em si                                            | `3000` |
+
+Instale antes:
+
+- **Git**
+- **Node.js 24** (versão em `.nvmrc`). Confira com `node -v`.
+- **Docker Desktop**, que sobe o banco e o Mailpit com um comando. Precisa de
+  administrador para instalar e precisa estar **aberto** (ícone da baleia) antes
+  de rodar `docker compose`. Confira com `docker --version`.
+  Sem Docker (ex: computador do laboratório): veja
+  [Rodar sem Docker](#rodar-sem-docker-windows-sem-administrador).
+
+A internet precisa estar ligada: o mapa (OpenStreetMap), a geocodificação dos
+endereços (Nominatim), o CEP (ViaCEP) e as fotos (Cloudinary) são serviços
+externos.
 
 ## Como rodar
 
+Os comandos abaixo funcionam no PowerShell, no Git Bash e no terminal do
+VS Code.
+
 ```bash
-# 1. Instalar dependências (também gera o Prisma Client)
+# 1. Baixar o código
+git clone https://github.com/uni-teto/uni-teto.git
+cd uni-teto
+
+# 2. Instalar dependências (também gera o Prisma Client)
 npm install
 
-# 2. Criar o arquivo de variáveis de ambiente
+# 3. Criar o arquivo de variáveis de ambiente
+#    (o .env não vem no git; os valores do exemplo já servem para rodar local)
 cp .env.example .env
 
-# 3. Subir Postgres/PostGIS e Mailpit
+# 4. Subir Postgres/PostGIS e Mailpit (Docker Desktop aberto)
 docker compose up -d
 
-# 4. Aplicar as migrations no banco
+# 5. Criar as tabelas no banco
 npm run db:migrate
 
-# 5. Cadastrar universidades e campi iniciais (pode rodar de novo sem duplicar)
+# 6. Cadastrar universidades e campi (pode rodar de novo sem duplicar)
 npm run db:seed
 
-# 6. (Opcional) Anúncios de demonstração, com fotos, para ver a busca com dados
+# 7. (Opcional) Anúncios de demonstração, com fotos, para ver a busca com dados
 #    (as fotos já estão no Cloudinary: não precisa configurar nada)
 npm run db:seed-demo
 
-# 7. Rodar a aplicação em http://localhost:3000
+# 8. Rodar a aplicação
 npm run dev
 ```
 
-E-mails enviados em desenvolvimento aparecem no Mailpit: http://localhost:8025
+Abra http://localhost:3000. O terminal do `npm run dev` precisa ficar aberto;
+`Ctrl+C` para parar.
+
+### Criar uma conta para testar
+
+Os e-mails não saem de verdade: todos caem no Mailpit
+(http://localhost:8025), inclusive para endereços que não existem. Então:
+
+1. Cadastre-se em http://localhost:3000. Para **estudante**, use qualquer
+   e-mail com domínio de universidade cadastrada, mesmo inventado (ex:
+   `teste@ufpi.edu.br` ou `teste@aluno.uespi.br`). Para **anunciante**,
+   qualquer e-mail.
+2. Abra o Mailpit, clique no e-mail de confirmação e no link dele.
+3. Faça login. Sem confirmar o e-mail o login não funciona.
+
+### Nas próximas vezes
+
+O banco guarda os dados entre uma vez e outra. Basta:
+
+```bash
+docker compose up -d   # Docker Desktop aberto
+npm run dev
+```
+
+`docker compose down` desliga o banco e o Mailpit sem apagar os dados
+(`docker compose down -v` apaga tudo e você volta ao passo 5).
 
 ### Atualizar uma cópia que já roda
 
@@ -82,6 +134,74 @@ e `docker compose --profile app down` para desligar tudo.
 No Windows/Mac rodar fora do Docker (`npm run dev`) costuma ser mais rápido; use
 o modo acima se preferir não instalar o Node ou para reproduzir o ambiente do
 colega.
+
+### Rodar sem Docker (Windows, sem administrador)
+
+Para computador onde não dá para instalar o Docker (laboratório, máquina do
+trabalho). O PostgreSQL, o PostGIS e o Mailpit têm versão em `.zip` que roda
+sem instalar. Use uma pasta **fora do projeto**, ex: `C:\Users\<você>\uniteto-local`.
+
+1. Baixe e extraia nessa pasta:
+   - **PostgreSQL 17**, versão _binaries_ (zip):
+     https://www.enterprisedb.com/download-postgresql-binaries. Fica uma
+     pasta `pgsql`.
+   - **PostGIS** para PostgreSQL 17 (o `postgis-bundle-pg17-...x64.zip`):
+     https://download.osgeo.org/postgis/windows/pg17/. Copie as pastas `bin`,
+     `lib` e `share` dele para dentro de `pgsql`, juntando com as que já
+     existem (sem isso dá `extension "postgis" is not available`).
+   - **Mailpit** (`mailpit-windows-amd64.zip`):
+     https://github.com/axllent/mailpit/releases/latest. É só o `mailpit.exe`.
+2. No PowerShell, dentro dessa pasta, crie o banco (só na primeira vez):
+
+   ```powershell
+   .\pgsql\bin\initdb.exe -D dados -U uniteto -E UTF8 --locale=C
+   .\pgsql\bin\pg_ctl.exe -D dados -l postgres.log start
+   .\pgsql\bin\createdb.exe -U uniteto uniteto
+   ```
+
+3. Abra outro terminal e deixe o Mailpit rodando:
+
+   ```powershell
+   .\mailpit.exe
+   ```
+
+   Se o Windows perguntar sobre o firewall, pode cancelar: só o próprio
+   computador acessa.
+
+4. Siga [Como rodar](#como-rodar) **pulando o passo 4** (`docker compose`). O
+   `.env` do exemplo já aponta para `localhost:5432` e `localhost:1025`.
+
+Nas próximas vezes (depois de reiniciar o computador o banco desliga):
+
+```powershell
+.\pgsql\bin\pg_ctl.exe -D dados -l postgres.log start   # na pasta uniteto-local
+.\mailpit.exe                                           # em outro terminal
+npm run dev                                             # na pasta do projeto
+```
+
+Para desligar o banco: `.\pgsql\bin\pg_ctl.exe -D dados stop`. Os dados ficam
+na pasta `dados` (apagar a pasta zera o banco).
+
+### Problemas comuns
+
+| Mensagem / sintoma                                                        | O que fazer                                                                                                                                     |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docker` não é reconhecido                                                | Docker não instalado. Instale o Docker Desktop ou use [Rodar sem Docker](#rodar-sem-docker-windows-sem-administrador).                          |
+| `error during connect` / `cannot find the file specified` (no `docker`)   | O Docker Desktop está fechado. Abra e espere ficar "Engine running".                                                                            |
+| `Can't reach database server at localhost:5432` (P1001)                   | O banco não está rodando: `docker compose up -d` (ou `pg_ctl ... start` sem Docker).                                                            |
+| `port is already allocated` / porta 5432 em uso                           | Já existe outro PostgreSQL na máquina. Pare ele, ou troque a porta no `docker-compose.yml` (`"5433:5432"`) e no `DATABASE_URL` do `.env`.       |
+| Erro citando `DATABASE_URL` ou `datasource.url`                           | Falta o `.env`: `cp .env.example .env` na pasta do projeto.                                                                                     |
+| `extension "postgis" is not available`                                    | Banco sem PostGIS. Com Docker, a imagem já tem; sem Docker, copie `bin`, `lib` e `share` do PostGIS para dentro do `pgsql`.                     |
+| `npm.ps1 cannot be loaded because running scripts is disabled`            | PowerShell bloqueando scripts: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, ou use o Git Bash / Prompt de Comando.                    |
+| `cp` não é reconhecido (Prompt de Comando)                                | No `cmd`, use `copy .env.example .env`.                                                                                                         |
+| `npm install` reclama da versão (`engines`) ou erros estranhos de sintaxe | Node antigo. Precisa do 24 (`node -v`).                                                                                                         |
+| Cadastro diz que o e-mail não é permitido                                 | Faltou o `npm run db:seed`, ou o domínio não é de universidade cadastrada. Use `@ufpi.edu.br` / `@aluno.uespi.br`, ou cadastre como anunciante. |
+| E-mail de confirmação não chega                                           | Ele vai para o Mailpit (http://localhost:8025), não para a caixa real. Confira se o Mailpit está rodando.                                       |
+| Login dá erro mesmo com a senha certa                                     | E-mail ainda não confirmado: clique no link do e-mail no Mailpit.                                                                               |
+| Busca sem nenhum anúncio                                                  | Banco novo, sem dados: `npm run db:seed-demo`.                                                                                                  |
+| `Unknown argument` ou erro do Prisma depois de um `git pull`              | `npm install`, `npm run db:migrate` e reinicie o `npm run dev`.                                                                                 |
+| `Can't resolve '...'` no `npm run dev`                                    | Cache velho: apague a pasta `.next/dev` e suba de novo.                                                                                         |
+| Mapa cinza, sem ruas                                                      | Sem internet, ou a rede bloqueia o OpenStreetMap (comum em rede de instituição).                                                                |
 
 ### Testes E2E (Playwright)
 
